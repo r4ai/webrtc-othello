@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Button } from '../ui/Button'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 interface OnlineControlsProps {
   message: string
@@ -21,6 +23,8 @@ export function OnlineControls({
   onRematch,
   onLeave,
 }: OnlineControlsProps) {
+  const [confirmingLeave, setConfirmingLeave] = useState(false)
+
   const rematchLabel = peerRequestedRematch
     ? '再戦を承認'
     : pendingRematch
@@ -47,10 +51,19 @@ export function OnlineControls({
             {rematchLabel}
           </Button>
         )}
-        <Button className="w-full" variant="ghost" onPress={onLeave}>
+        <Button className="w-full" variant="ghost" onPress={() => setConfirmingLeave(true)}>
           対戦を終了
         </Button>
       </div>
+      <ConfirmDialog
+        isOpen={confirmingLeave}
+        title="対戦を終了しますか？"
+        description="対戦を終了すると、相手との接続が切断されます。"
+        confirmLabel="終了する"
+        cancelLabel="続ける"
+        onConfirm={onLeave}
+        onCancel={() => setConfirmingLeave(false)}
+      />
     </section>
   )
 }
