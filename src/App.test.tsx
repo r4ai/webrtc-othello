@@ -45,4 +45,20 @@ describe('App', () => {
       expect(screen.getByRole('button', { name: 'オンライン対戦' })).toBeInTheDocument()
     })
   })
+
+  test('navigates through the online lobby and returns home from the header back button', async () => {
+    const user = userEvent.setup()
+
+    renderAt('/')
+    await user.click(await screen.findByRole('button', { name: 'オンライン対戦' }))
+    expect(window.location.pathname).toBe('/online')
+
+    await user.click(await screen.findByRole('button', { name: '部屋を作る' }))
+    expect(window.location.pathname).toBe('/online/create')
+
+    await user.click(await screen.findByRole('button', { name: 'ホームへ戻る' }))
+
+    expect(window.location.pathname).toBe('/')
+    expect(await screen.findByRole('button', { name: 'ひとりで遊ぶ' })).toBeInTheDocument()
+  })
 })
