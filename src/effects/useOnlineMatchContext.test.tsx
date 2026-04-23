@@ -16,15 +16,15 @@ describe('useOnlineMatchContext', () => {
       viewModel: {
         gameState: {
           board: [],
-          currentPlayer: 'black',
+          currentPlayer: 'black' as const,
           validMoves: [],
           consecutivePasses: 0,
-          status: 'playing',
+          status: 'playing' as const,
           winner: null,
         },
         score: { black: 2, white: 2 },
         localRole: null,
-        connectionState: 'idle',
+        connectionState: 'idle' as const,
         inviteCode: '',
         errorMessage: null,
         isCreatingRoom: false,
