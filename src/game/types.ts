@@ -12,6 +12,14 @@ export type Board = Cell[][]
 
 export type Winner = Player | 'draw'
 export type GameStatus = 'playing' | 'finished'
+export type PlayerRole = 'host' | 'guest'
+export type MatchConnectionState =
+  | 'idle'
+  | 'code-ready'
+  | 'connecting'
+  | 'connected'
+  | 'disconnected'
+  | 'failed'
 
 export interface GameState {
   board: Board

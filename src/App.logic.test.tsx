@@ -1,143 +1,159 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { GameState, Move } from './game/types'
+import type {
+  GameState,
+  MatchConnectionState,
+  PlayerRole,
+} from './game/types'
 import App from './App'
 
-const playMove = vi.fn<(move: Move) => void>()
-const passTurn = vi.fn<() => void>()
-const resetGame = vi.fn<() => void>()
-let capturedAiHandler: ((move: Move | null) => void) | null = null
-let mockState: GameState
+let onlineState: {
+  gameState: GameState
+  score: { black: number; white: number }
+  localRole: PlayerRole | null
+  connectionState: MatchConnectionState
+  inviteCode: string
+  errorMessage: string | null
+  canInteract: boolean
+  canRequestRematch: boolean
+  localPlayerLabel: string
+  matchId: string | null
+  revision: number
+  pendingRematch: boolean
+  peerRequestedRematch: boolean
+  requiresAnswerCode: boolean
+}
 
-vi.mock('./effects/useGame', () => ({
-  useGame: () => ({
-    state: mockState,
-    score: { black: 2, white: 2 },
-    playMove,
-    passTurn,
-    resetGame,
+const createRoom = vi.fn<() => Promise<void>>()
+const joinRoom = vi.fn<(inviteCode: string) => Promise<void>>()
+const submitAnswerCode = vi.fn<(inviteCode: string) => Promise<void>>()
+const submitMove = vi.fn<(move: { row: number; col: number }) => void>()
+const submitPass = vi.fn<() => void>()
+const requestRematch = vi.fn<() => void>()
+const leaveMatch = vi.fn<() => void>()
+const copyInviteCode = vi.fn<() => Promise<boolean>>()
+
+vi.mock('./effects/useOnlineMatch', () => ({
+  useOnlineMatch: () => ({
+    viewModel: onlineState,
+    actions: {
+      createRoom,
+      joinRoom,
+      submitAnswerCode,
+      submitMove,
+      submitPass,
+      requestRematch,
+      leaveMatch,
+      copyInviteCode,
+    },
   }),
 }))
 
-vi.mock('./effects/useAI', () => ({
-  useAI: ({ onResolveMove }: { onResolveMove: (move: Move | null) => void }) => {
-    capturedAiHandler = onResolveMove
-  },
-}))
-
-vi.mock('./components/Board', () => ({
-  Board: ({
-    interactive,
-    onMove,
-  }: {
-    interactive: boolean
-    onMove: (move: Move) => void
-  }) => (
-    <button
-      type="button"
-      data-testid="board-trigger"
-      data-interactive={interactive ? 'true' : 'false'}
-      onClick={() => onMove({ row: 6, col: 7 })}
-    >
-      board
-    </button>
-  ),
-}))
-
-vi.mock('./components/Controls', () => ({
-  Controls: ({
-    canPass,
-    isAiTurn,
-  }: {
-    canPass: boolean
-    isAiTurn: boolean
-  }) => (
-    <div>
-      <span data-testid="can-pass">{String(canPass)}</span>
-      <span data-testid="is-ai-turn">{String(isAiTurn)}</span>
-    </div>
-  ),
-}))
-
-vi.mock('./components/GameStatus', () => ({
-  GameStatus: () => <div>status</div>,
-}))
-
-vi.mock('./components/ScoreBoard', () => ({
-  ScoreBoard: () => <div>score</div>,
-}))
-
-describe('App logic branches', () => {
+describe('App online logic', () => {
   beforeEach(() => {
-    playMove.mockReset()
-    passTurn.mockReset()
-    resetGame.mockReset()
-    capturedAiHandler = null
-    mockState = {
-      board: [] as never[],
-      currentPlayer: 'black',
-      validMoves: [{ row: 2, col: 3 }],
-      consecutivePasses: 0,
-      status: 'playing',
-      winner: null,
+    createRoom.mockReset()
+    joinRoom.mockReset()
+    submitAnswerCode.mockReset()
+    submitMove.mockReset()
+    submitPass.mockReset()
+    requestRematch.mockReset()
+    leaveMatch.mockReset()
+    copyInviteCode.mockReset()
+    copyInviteCode.mockResolvedValue(true)
+    onlineState = {
+      gameState: {
+        board: [] as never[],
+        currentPlayer: 'black',
+        validMoves: [],
+        consecutivePasses: 0,
+        status: 'playing',
+        winner: null,
+      },
+      score: { black: 2, white: 2 },
+      localRole: 'host',
+      connectionState: 'code-ready',
+      inviteCode: 'invite-code',
+      errorMessage: null,
+      canInteract: false,
+      canRequestRematch: false,
+      localPlayerLabel: '黒',
+      matchId: 'match-1',
+      revision: 0,
+      pendingRematch: false,
+      peerRequestedRematch: false,
+      requiresAnswerCode: true,
     }
   })
 
-  test('forwards board clicks to playMove during the human turn', async () => {
+  test('shows online setup flow with invite and answer inputs', async () => {
     const user = userEvent.setup()
 
     render(<App />)
-    await user.click(screen.getByTestId('board-trigger'))
+    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
 
-    expect(playMove).toHaveBeenCalledWith({ row: 6, col: 7 })
-    expect(screen.getByTestId('can-pass')).toHaveTextContent('false')
+    expect(screen.getByText('オンライン対戦')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('invite-code')).toBeInTheDocument()
+    expect(screen.getByLabelText('参加者の応答コード')).toBeInTheDocument()
   })
 
-  test('ignores board clicks during the AI turn and disables pass', async () => {
+  test('forwards join code input to joinRoom', async () => {
     const user = userEvent.setup()
-    mockState = {
-      ...mockState,
-      currentPlayer: 'white',
-      validMoves: [],
+
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
+    await user.type(screen.getByLabelText('部屋に入る'), 'host-offer')
+    await user.click(screen.getByRole('button', { name: '招待コードで入室' }))
+
+    expect(joinRoom).toHaveBeenCalledWith('host-offer')
+  })
+
+  test('shows online match screen when connected and dispatches board moves', async () => {
+    const user = userEvent.setup()
+    onlineState = {
+      ...onlineState,
+      connectionState: 'connected',
+      canInteract: true,
+      requiresAnswerCode: false,
+      gameState: {
+        board: Array.from({ length: 8 }, () => Array(8).fill(null)),
+        currentPlayer: 'black',
+        validMoves: [{ row: 2, col: 3 }],
+        consecutivePasses: 0,
+        status: 'playing',
+        winner: null,
+      },
     }
 
     render(<App />)
-    await user.click(screen.getByTestId('board-trigger'))
+    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
+    await user.click(screen.getByLabelText('3行4列 置けます'))
 
-    expect(playMove).not.toHaveBeenCalled()
-    expect(screen.getByTestId('is-ai-turn')).toHaveTextContent('true')
-    expect(screen.getByTestId('can-pass')).toHaveTextContent('false')
+    expect(screen.getByText(/あなたの石: 黒/)).toBeInTheDocument()
+    expect(submitMove).toHaveBeenCalledWith({ row: 2, col: 3 })
   })
 
-  test('passes when the AI resolves to null', () => {
-    render(<App />)
-
-    capturedAiHandler?.(null)
-
-    expect(passTurn).toHaveBeenCalledTimes(1)
-    expect(playMove).not.toHaveBeenCalled()
-  })
-
-  test('plays the resolved AI move when one is returned', () => {
-    render(<App />)
-
-    capturedAiHandler?.({ row: 4, col: 5 })
-
-    expect(playMove).toHaveBeenCalledWith({ row: 4, col: 5 })
-    expect(passTurn).not.toHaveBeenCalled()
-  })
-
-  test('allows pass when the human player has no valid moves', () => {
-    mockState = {
-      ...mockState,
-      currentPlayer: 'black',
-      validMoves: [],
+  test('returns to setup when online disconnect action is used', async () => {
+    const user = userEvent.setup()
+    onlineState = {
+      ...onlineState,
+      connectionState: 'connected',
+      requiresAnswerCode: false,
+      gameState: {
+        board: Array.from({ length: 8 }, () => Array(8).fill(null)),
+        currentPlayer: 'white',
+        validMoves: [],
+        consecutivePasses: 0,
+        status: 'finished',
+        winner: 'white',
+      },
+      canRequestRematch: true,
     }
 
     render(<App />)
+    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
+    await user.click(screen.getByRole('button', { name: '切断' }))
 
-    expect(screen.getByTestId('is-ai-turn')).toHaveTextContent('false')
-    expect(screen.getByTestId('can-pass')).toHaveTextContent('true')
+    expect(leaveMatch).toHaveBeenCalledTimes(1)
   })
 })
