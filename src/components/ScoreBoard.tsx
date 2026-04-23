@@ -24,9 +24,9 @@ function ScoreCard({
         'rounded-2xl border px-4 py-3 transition',
         tone === 'dark'
           ? 'border-slate-900/70 bg-slate-900 text-slate-50'
-          : 'border-slate-200 bg-slate-100 text-slate-900',
-        active && tone === 'dark' && 'ring-2 ring-amber-300 ring-offset-2 ring-offset-transparent',
-        active && tone === 'light' && 'ring-2 ring-emerald-600 ring-offset-2 ring-offset-transparent',
+          : 'border-slate-300 bg-slate-100 text-slate-900',
+        active && tone === 'dark' && 'ring-2 ring-sky-300 ring-offset-2 ring-offset-transparent',
+        active && tone === 'light' && 'ring-2 ring-sky-500 ring-offset-2 ring-offset-transparent',
       )}
     >
       <p className="text-xs font-semibold uppercase tracking-[0.16em]">{label}</p>
