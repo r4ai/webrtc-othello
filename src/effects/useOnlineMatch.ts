@@ -14,6 +14,10 @@ export interface UseOnlineMatchResult {
   actions: OnlineMatchActions
 }
 
+function toErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : '通信処理に失敗しました。'
+}
+
 function createMatchId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `match-${Date.now()}`
 }
@@ -237,26 +241,46 @@ export function useOnlineMatch(): UseOnlineMatchResult {
   }, [])
 
   const createRoom = useCallback(async () => {
-    resetLocalState()
-    const nextMatchId = createMatchId()
-    setMatchId(nextMatchId)
-    matchIdRef.current = nextMatchId
-    await createPeerRoom()
-  }, [createPeerRoom, resetLocalState])
+    try {
+      resetLocalState()
+      const nextMatchId = createMatchId()
+      setMatchId(nextMatchId)
+      matchIdRef.current = nextMatchId
+      await createPeerRoom()
+    } catch (error) {
+      leaveConnection()
+      matchIdRef.current = null
+      setMatchId(null)
+      resetLocalState()
+      setErrorMessage(toErrorMessage(error))
+    }
+  }, [createPeerRoom, leaveConnection, resetLocalState])
 
   const joinRoom = useCallback(
     async (inviteCode: string) => {
-      resetLocalState()
-      setMatchId(null)
-      matchIdRef.current = null
-      await joinPeerRoom(inviteCode)
+      try {
+        resetLocalState()
+        setMatchId(null)
+        matchIdRef.current = null
+        await joinPeerRoom(inviteCode)
+      } catch (error) {
+        leaveConnection()
+        matchIdRef.current = null
+        setMatchId(null)
+        resetLocalState()
+        setErrorMessage(toErrorMessage(error))
+      }
     },
-    [joinPeerRoom, resetLocalState],
+    [joinPeerRoom, leaveConnection, resetLocalState],
   )
 
   const submitAnswerCode = useCallback(
     async (inviteCode: string) => {
-      await acceptGuestAnswer(inviteCode)
+      try {
+        await acceptGuestAnswer(inviteCode)
+      } catch (error) {
+        setErrorMessage(toErrorMessage(error))
+      }
     },
     [acceptGuestAnswer],
   )

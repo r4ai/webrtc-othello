@@ -26,7 +26,7 @@ describe('App', () => {
     await user.click(await screen.findByLabelText('3行4列 置けます'))
 
     expect(await screen.findByRole('grid', { name: 'オセロボード' })).toBeInTheDocument()
-    expect(await screen.findByText('白の番です。')).toBeInTheDocument()
+    expect(await screen.findByText('白の番です。AIが考えています。')).toBeInTheDocument()
   })
 
   test('supports browser back navigation between routed screens', async () => {

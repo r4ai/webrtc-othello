@@ -12,7 +12,7 @@ describe('Controls', () => {
         onReset={() => {}}
         aiEnabled={true}
         onToggleAI={() => {}}
-        isAiTurn={false}
+        helperText="あなたの番です。"
       />,
     )
 
@@ -30,7 +30,7 @@ describe('Controls', () => {
         onReset={() => {}}
         aiEnabled={true}
         onToggleAI={onToggleAI}
-        isAiTurn={false}
+        helperText="あなたの番です。"
       />,
     )
 

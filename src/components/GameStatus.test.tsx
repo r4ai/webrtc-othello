@@ -3,56 +3,27 @@ import { describe, expect, test } from 'vitest'
 import { GameStatus } from './GameStatus'
 
 describe('GameStatus', () => {
-  test('matches snapshot while playing', () => {
+  test('renders title and detail', () => {
     const { container } = render(
       <GameStatus
-        status="playing"
-        currentPlayer="black"
-        winner={null}
-        validMovesCount={4}
+        title="対局中"
+        detail="黒の番です。"
       />,
     )
 
-    expect(container).toMatchSnapshot()
+    expect(container).toHaveTextContent('対局中')
+    expect(container).toHaveTextContent('黒の番です。')
   })
 
-  test('shows winner text for finished game', () => {
+  test('shows supplied finished message', () => {
     const { getByText } = render(
       <GameStatus
-        status="finished"
-        currentPlayer="white"
-        winner="white"
-        validMovesCount={0}
+        title="ゲーム終了"
+        detail="白の勝ちです。"
       />,
     )
 
     expect(getByText('ゲーム終了')).toBeInTheDocument()
     expect(getByText('白の勝ちです。')).toBeInTheDocument()
-  })
-
-  test('prompts for a pass when the current player has no legal moves', () => {
-    const { getByText } = render(
-      <GameStatus
-        status="playing"
-        currentPlayer="white"
-        winner={null}
-        validMovesCount={0}
-      />,
-    )
-
-    expect(getByText('白は打てる手がありません。パスしてください。')).toBeInTheDocument()
-  })
-
-  test('shows draw text for a finished tied game', () => {
-    const { getByText } = render(
-      <GameStatus
-        status="finished"
-        currentPlayer="black"
-        winner="draw"
-        validMovesCount={0}
-      />,
-    )
-
-    expect(getByText('引き分けです。')).toBeInTheDocument()
   })
 })

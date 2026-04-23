@@ -7,7 +7,7 @@ interface ControlsProps {
   onReset: () => void
   aiEnabled: boolean
   onToggleAI: (enabled: boolean) => void
-  isAiTurn: boolean
+  helperText: string
 }
 
 export function Controls({
@@ -16,7 +16,7 @@ export function Controls({
   onReset,
   aiEnabled,
   onToggleAI,
-  isAiTurn,
+  helperText,
 }: ControlsProps) {
   return (
     <section className="space-y-3 rounded-2xl border border-white/20 bg-white/10 p-4">
@@ -26,13 +26,11 @@ export function Controls({
         onChange={onToggleAI}
       />
 
-      <p className="text-sm text-white/90">
-        {isAiTurn ? 'AIが思考中です...' : 'あなたの操作を待っています。'}
-      </p>
+      <p className="text-sm text-white/90">{helperText}</p>
 
       <div className="flex flex-wrap gap-3">
         <Button variant="secondary" onPress={onReset}>
-          リスタート
+          最初から
         </Button>
         <Button variant="ghost" onPress={onPass} isDisabled={!canPass}>
           パス

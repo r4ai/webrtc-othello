@@ -39,4 +39,20 @@ describe('Board', () => {
 
     expect(onMove).toHaveBeenCalledWith({ row: 2, col: 3 })
   })
+
+  test('hides move hints while the board is not interactive', () => {
+    const state = createInitialGameState()
+
+    render(
+      <Board
+        board={state.board}
+        validMoves={state.validMoves}
+        interactive={false}
+        onMove={() => {}}
+      />,
+    )
+
+    expect(screen.queryByTestId('move-hint')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('3行4列 空きマス')).toBeDisabled()
+  })
 })

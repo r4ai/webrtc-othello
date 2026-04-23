@@ -1,6 +1,7 @@
 import { Button } from '../ui/Button'
 
 interface OnlineControlsProps {
+  message: string
   canPass: boolean
   canRequestRematch: boolean
   pendingRematch: boolean
@@ -11,6 +12,7 @@ interface OnlineControlsProps {
 }
 
 export function OnlineControls({
+  message,
   canPass,
   canRequestRematch,
   pendingRematch,
@@ -27,13 +29,7 @@ export function OnlineControls({
 
   return (
     <section className="space-y-3 rounded-2xl border border-white/20 bg-white/10 p-4">
-      <p className="text-sm text-white/90">
-        {peerRequestedRematch
-          ? '相手が再戦を希望しています。'
-          : pendingRematch
-            ? '再戦の返答を待っています。'
-            : '通信対戦では相手との同期を優先します。'}
-      </p>
+      <p className="text-sm text-white/90">{message}</p>
 
       <div className="flex flex-wrap gap-3">
         <Button variant="ghost" onPress={onPass} isDisabled={!canPass}>
@@ -47,7 +43,7 @@ export function OnlineControls({
           {rematchLabel}
         </Button>
         <Button variant="ghost" onPress={onLeave}>
-          切断
+          対戦を終了
         </Button>
       </div>
     </section>

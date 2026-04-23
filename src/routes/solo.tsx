@@ -6,7 +6,15 @@ import { GameStatus } from '../components/GameStatus'
 import { ScoreBoard } from '../components/ScoreBoard'
 import { useAI } from '../effects/useAI'
 import { useGame } from '../effects/useGame'
-import type { Move } from '../game/types'
+import type { Move, Player, Winner } from '../game/types'
+
+function playerLabel(player: Player): string {
+  return player === 'black' ? '黒' : '白'
+}
+
+function winnerText(winner: Winner): string {
+  return winner === 'draw' ? '引き分けです。' : `${playerLabel(winner)}の勝ちです。`
+}
 
 function SoloRoute() {
   const navigate = useNavigate()
@@ -47,6 +55,25 @@ function SoloRoute() {
   })
 
   const canPass = state.status === 'playing' && state.validMoves.length === 0 && !isAiTurn
+  const statusTitle = state.status === 'finished' ? 'ゲーム終了' : '対局中'
+  const statusDetail =
+    state.status === 'finished'
+      ? winnerText(state.winner as Winner)
+      : isAiTurn && state.validMoves.length === 0
+        ? '白は打てる手がありません。AIが自動でパスします。'
+        : isAiTurn
+          ? '白の番です。AIが考えています。'
+          : canPass
+            ? `${playerLabel(state.currentPlayer)}は打てる手がありません。パスしてください。`
+            : `${playerLabel(state.currentPlayer)}の番です。`
+  const controlsHelperText =
+    state.status === 'finished'
+      ? '対局が終わりました。最初からやり直せます。'
+      : isAiTurn
+        ? 'AIの手番です。入力を待っています。'
+        : canPass
+          ? '打てる手がありません。パスしてください。'
+          : 'あなたの番です。'
 
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -75,10 +102,8 @@ function SoloRoute() {
           currentPlayer={state.currentPlayer}
         />
         <GameStatus
-          status={state.status}
-          currentPlayer={state.currentPlayer}
-          winner={state.winner}
-          validMovesCount={state.validMoves.length}
+          title={statusTitle}
+          detail={statusDetail}
         />
         <Controls
           canPass={canPass}
@@ -86,7 +111,7 @@ function SoloRoute() {
           onReset={resetGame}
           aiEnabled={aiEnabled}
           onToggleAI={setAiEnabled}
-          isAiTurn={isAiTurn}
+          helperText={controlsHelperText}
         />
       </aside>
     </section>

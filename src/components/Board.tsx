@@ -23,7 +23,7 @@ export function Board({ board, validMoves, interactive, onMove }: BoardProps) {
       {board.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
           const key = `${rowIndex}-${colIndex}`
-          const canPlace = validMoveSet.has(key)
+          const canPlace = interactive && validMoveSet.has(key)
 
           return (
             <Cell
