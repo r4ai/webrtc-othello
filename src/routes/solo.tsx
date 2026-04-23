@@ -20,6 +20,20 @@ function winnerText(winner: Winner): string {
 function SoloRoute() {
   const { state, score, playMove, passTurn, resetGame } = useGame()
   const [aiEnabled, setAiEnabled] = useState(true)
+  const [confirmingReset, setConfirmingReset] = useState(false)
+
+  const handleResetPress = () => {
+    if (state.status === 'playing') {
+      setConfirmingReset(true)
+    } else {
+      resetGame()
+    }
+  }
+
+  const handleConfirmReset = () => {
+    setConfirmingReset(false)
+    resetGame()
+  }
 
   const isAiTurn =
     aiEnabled && state.status === 'playing' && state.currentPlayer === 'white'
@@ -103,9 +117,23 @@ function SoloRoute() {
           {controlsHelperText && (
             <p className="text-sm text-white/75">{controlsHelperText}</p>
           )}
-          <Button variant="secondary" onPress={resetGame} className="w-full">
-            最初から
-          </Button>
+          {confirmingReset ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-white/75">対局を中断しますか？</p>
+              <div className="flex gap-2">
+                <Button variant="secondary" onPress={handleConfirmReset} className="flex-1">
+                  やり直す
+                </Button>
+                <Button variant="ghost" onPress={() => setConfirmingReset(false)} className="flex-1">
+                  続ける
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="secondary" onPress={handleResetPress} className="w-full">
+              最初から
+            </Button>
+          )}
         </section>
       </aside>
     </section>
