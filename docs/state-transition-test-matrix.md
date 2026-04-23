@@ -1,0 +1,135 @@
+# オセロ実装 状態遷移テストマトリクス
+
+## 目的
+
+- ロジックごとの状態遷移を明示し、入力/出力パターンを抜け漏れなく列挙する。
+- 各遷移にテストIDを付与し、実装済みテストとの対応を追跡する。
+- 2026-04-23 時点の `npm run test:coverage` の結果を根拠に、網羅状況を検証する。
+
+## 1. `src/game/board.ts`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト状態 |
+|---|---|---|---|---|
+| BD-01 | 任意 | `createEmptyBoard()` | 8x8・全セル`null` | 実装済み |
+| BD-02 | `createEmptyBoard()`直後 | 1セル変更 | 別行へ副作用なし | 実装済み |
+| BD-03 | 任意 | `createInitialBoard()` | 中央4石が初期配置 | 実装済み |
+| BD-04 | 境界付近 | `isInsideBoard(row,col)` | 境界内は`true`、外は`false` | 実装済み |
+| BD-05 | 石数が偏った盤面 | `countDiscs(board)` | 黒/白の枚数一致 | 実装済み |
+| BD-06 | 空きあり/満杯 | `isBoardFull(board)` | 空きあり`false`、満杯`true` | 実装済み |
+
+## 2. `src/game/moves.ts`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| MV-01 | 任意 | `getOpponent(player)` | 黒↔白で反転 | 実装済み |
+| MV-02 | 盤外/占有マス | `getFlipsForMove` | 空配列 | 実装済み |
+| MV-03 | 挟み込み成立なし | `getFlipsForMove` | 空配列 | 実装済み |
+| MV-04 | 1方向成立 | `getFlipsForMove` | 該当方向の座標配列 | 実装済み |
+| MV-05 | 複数方向成立 | `getFlipsForMove` | 全方向の反転座標 | 実装済み |
+| MV-06 | 合法手/非合法手 | `isValidMove` | `true/false`が一致 | 実装済み |
+| MV-07 | 任意盤面 | `getValidMoves` | 全合法手が列挙される | 実装済み |
+| MV-08 | 非合法手 | `applyMove` | 例外送出 | 実装済み |
+| MV-09 | 合法手 | `applyMove` | 着手セル+反転セル更新 | 実装済み |
+
+## 3. `src/game/game.ts`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| GM-01 | 初期盤面 | `createInitialGameState()` | `playing`、黒手番、合法手4 | 実装済み |
+| GM-02 | 盤面満杯 | `createGameState` | `finished`+勝敗確定 | 実装済み |
+| GM-03 | 満杯かつ同数 | `createGameState` | `winner='draw'` | 実装済み |
+| GM-04 | 連続パス2回 | `createGameState(...,2)` | `finished` | 実装済み |
+| GM-05 | 現手番合法手なし・相手あり | `createGameState` | `playing`維持 | 実装済み |
+| GM-06 | 現手番合法手なし・相手なし | `createGameState` | `finished` | 実装済み |
+| GM-07 | `playing`状態 | `playTurn(validMove)` | 手番交代・連続パス0 | 実装済み |
+| GM-08 | `playing`かつ合法手なし | `playTurn(null)` | パス成功・連続パス+1 | 実装済み |
+| GM-09 | `playing`かつ合法手あり | `playTurn(null)` | 例外送出 | 実装済み |
+| GM-10 | `finished`状態 | `playTurn(any)` | 例外送出 | 実装済み |
+
+## 4. `src/effects/useGame.ts`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| UG-01 | 初期状態 | フック初期化 | 状態とスコアが初期一致 | 実装済み |
+| UG-02 | `playing` + 合法手 | `playMove(move)` | 状態更新 | 実装済み |
+| UG-03 | `playing` + 非合法手 | `playMove(move)` | 状態不変 | 実装済み |
+| UG-04 | `finished` | `playMove(move)` | 状態不変 | 実装済み |
+| UG-05 | `playing` + 合法手なし | `passTurn()` | パス遷移 | 実装済み |
+| UG-06 | `playing` + 合法手あり | `passTurn()` | 状態不変 | 実装済み |
+| UG-07 | `finished` | `passTurn()` | 状態不変 | 実装済み |
+| UG-08 | 任意状態 | `resetGame()` | 初期状態へ復帰 | 実装済み |
+
+## 5. `src/effects/useAI.ts`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| UA-01 | `enabled=false` | フック評価 | タイマー未設定 | 実装済み |
+| UA-02 | `status!='playing'` | フック評価 | タイマー未設定 | 実装済み |
+| UA-03 | `currentPlayer!=aiPlayer` | フック評価 | タイマー未設定 | 実装済み |
+| UA-04 | AI手番成立 | フック評価 | 遅延後に`onResolveMove`呼出 | 実装済み |
+| UA-05 | AI手番成立 | アンマウント/依存変更 | タイマーが`clearTimeout`される | 実装済み |
+
+## 6. `src/ai/evaluator.ts`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| EV-01 | 任意盤面 | `evaluate(board,'black')`,`evaluate(board,'white')` | 反対称 | 実装済み |
+| EV-02 | 角占有優位 | `evaluate` | 角の重みが効く | 実装済み |
+| EV-03 | 可動手優位 | `evaluate` | mobility重みが効く | 実装済み |
+| EV-04 | スコアが`-0`となる特殊値入力 | `evaluate` | `0`へ正規化 | 防御分岐のみ |
+
+## 7. `src/ai/minimax.ts`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| MM-01 | 合法手なし | `searchBestMove` | `null` | 実装済み |
+| MM-02 | 複数合法手 | `searchBestMove` | 最善手を返す | 実装済み |
+| MM-03 | `depth<=0`到達 | 探索再帰 | `evaluate`で打ち切り | 実装済み |
+| MM-04 | 現手番手なし・相手も手なし | 探索再帰 | `evaluate`で終端 | 実装済み |
+| MM-05 | 現手番手なし・相手に手あり | 探索再帰 | 手番スキップで再帰継続 | 実装済み |
+| MM-06 | 視点プレイヤー手番 | 探索再帰 | 最大化分岐を通る | 実装済み |
+| MM-07 | 相手手番 | 探索再帰 | 最小化分岐を通る | 実装済み |
+| MM-08 | 同点候補複数 | `searchBestMove` | 座標昇順タイブレーク | 実装済み |
+| MM-09 | 退化ケース(`score`が比較不能) | `searchBestMove` | `bestMove===null`フォールバック | 実装済み |
+
+## 8. `src/components/GameStatus.tsx`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| GS-01 | `playing` + 合法手あり | props | 通常の手番メッセージ | 実装済み |
+| GS-02 | `playing` + 合法手なし | props | パス促しメッセージ | 実装済み |
+| GS-03 | `finished` + 勝者あり | props | 勝者表示 | 実装済み |
+| GS-04 | `finished` + `draw` | props | 引き分け表示 | 実装済み |
+
+## 9. `src/App.tsx`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| AP-01 | 初期描画 | レンダリング | シェル表示 | 実装済み |
+| AP-02 | 人間手番 | 合法手クリック | `playMove`実行 | 実装済み |
+| AP-03 | AI手番 | 盤面クリック | `playMove`抑止 | 実装済み |
+| AP-04 | AI解決値が`null` | `onResolveMove(null)` | `passTurn`実行 | 実装済み |
+| AP-05 | AI解決値が`Move` | `onResolveMove(move)` | `playMove`実行 | 実装済み |
+| AP-06 | AI手番中 | `canPass`算出 | パス不可になる | 実装済み |
+
+## 10. `src/ui/Toggle.tsx`
+
+| 遷移ID | 前提状態 | 入力 | 期待結果 | テスト |
+|---|---|---|---|---|
+| TG-01 | `isSelected=true` | 描画 | ONスタイル適用 | 実装済み |
+| TG-02 | `isSelected=false` | 描画 | OFFスタイル適用 | 実装済み |
+
+## カバレッジ検証
+
+2026-04-23 の最終計測結果:
+
+- Statements: `99.54%` (`220/221`)
+- Branches: `98.61%` (`142/144`)
+- Functions: `100%` (`61/61`)
+- Lines: `99.53%` (`212/213`)
+
+判断:
+
+- `App.tsx`、`game/*`、`effects/*`、UI 状態分岐は実質全到達。
+- `minimax.ts` は深さ制限、手番スキップ、最大化/最小化、同点タイブレーク、NaN フォールバック、αβ剪定まで到達。
+- `evaluator.ts` の `Object.is(score, -0)` は防御コードであり、現在の整数加重和では通常入力から `-0` を生成できないため、防御分岐として扱う。
