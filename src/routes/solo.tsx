@@ -6,6 +6,7 @@ import { ScoreBoard } from '../components/ScoreBoard'
 import { useAI } from '../effects/useAI'
 import { useGame } from '../effects/useGame'
 import { Button } from '../ui/Button'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { Toggle } from '../ui/Toggle'
 import type { Move, Player, Winner } from '../game/types'
 
@@ -117,23 +118,18 @@ function SoloRoute() {
           {controlsHelperText && (
             <p className="text-sm text-white/75">{controlsHelperText}</p>
           )}
-          {confirmingReset ? (
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-white/75">対局を中断しますか？</p>
-              <div className="flex gap-2">
-                <Button variant="secondary" onPress={handleConfirmReset} className="flex-1">
-                  やり直す
-                </Button>
-                <Button variant="ghost" onPress={() => setConfirmingReset(false)} className="flex-1">
-                  続ける
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button variant="secondary" onPress={handleResetPress} className="w-full">
-              最初から
-            </Button>
-          )}
+          <Button variant="secondary" onPress={handleResetPress} className="w-full">
+            最初から
+          </Button>
+          <ConfirmDialog
+            isOpen={confirmingReset}
+            title="対局を中断しますか？"
+            description="現在の対局の進捗は失われます。"
+            confirmLabel="やり直す"
+            cancelLabel="続ける"
+            onConfirm={handleConfirmReset}
+            onCancel={() => setConfirmingReset(false)}
+          />
         </section>
       </aside>
     </section>
