@@ -1,0 +1,20 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GameStatus > matches snapshot while playing 1`] = `
+<div>
+  <section
+    class="rounded-2xl border border-white/20 bg-white/10 p-4 text-white"
+  >
+    <h2
+      class="text-sm font-bold uppercase tracking-[0.18em]"
+    >
+      対局中
+    </h2>
+    <p
+      class="mt-2 text-lg font-semibold"
+    >
+      黒の番です。
+    </p>
+  </section>
+</div>
+`;
