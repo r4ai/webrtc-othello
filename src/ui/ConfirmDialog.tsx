@@ -23,10 +23,11 @@ export function ConfirmDialog({
   return (
     <ModalOverlay
       isOpen={isOpen}
+      isDismissable
       onOpenChange={(open) => { if (!open) onCancel() }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
     >
-      <Modal isDismissable className="w-full max-w-sm rounded-3xl border border-white/15 bg-black/20 p-6 text-white shadow-2xl backdrop-blur outline-none">
+      <Modal className="w-full max-w-sm rounded-3xl border border-white/15 bg-black/20 p-6 text-white shadow-2xl backdrop-blur outline-none">
         <Dialog className="outline-none">
           <Heading slot="title" className="text-lg font-bold tracking-tight">
             {title}
