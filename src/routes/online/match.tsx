@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Board } from '../../components/Board'
 import { GameStatus } from '../../components/GameStatus'
 import { OnlineControls } from '../../components/OnlineControls'
 import { ScoreBoard } from '../../components/ScoreBoard'
 import { StatusLine } from '../../components/StatusLine'
-import { useOnlineMatchContext } from '../../effects/OnlineMatchContext'
+import { useOnlineMatchContext } from '../../effects/useOnlineMatchContext'
 import type { Player, Winner } from '../../game/types'
 
 function playerLabel(player: Player): string {
@@ -20,7 +20,7 @@ function MatchRoute() {
   const { viewModel: online, actions } = useOnlineMatchContext()
   const navigate = useNavigate()
 
-  const initialConnectionState = useRef(online.connectionState).current
+  const [initialConnectionState] = useState(online.connectionState)
   useEffect(() => {
     if (initialConnectionState !== 'connected') {
       navigate({ to: '/online', replace: true })

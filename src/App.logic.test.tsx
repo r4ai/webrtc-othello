@@ -15,6 +15,9 @@ let onlineState: {
   connectionState: MatchConnectionState
   inviteCode: string
   errorMessage: string | null
+  isCreatingRoom: boolean
+  isJoiningRoom: boolean
+  isSubmittingAnswer: boolean
   canInteract: boolean
   canRequestRematch: boolean
   localPlayerLabel: string
@@ -90,6 +93,9 @@ describe('App online logic', () => {
       connectionState: 'code-ready',
       inviteCode: 'invite-code',
       errorMessage: null,
+      isCreatingRoom: false,
+      isJoiningRoom: false,
+      isSubmittingAnswer: false,
       canInteract: false,
       canRequestRematch: false,
       localPlayerLabel: '黒',
@@ -107,6 +113,62 @@ describe('App online logic', () => {
     expect(await screen.findByText('部屋を作る')).toBeInTheDocument()
     expect(await screen.findByDisplayValue('invite-code')).toBeInTheDocument()
     expect(await screen.findByLabelText('相手の応答コード')).toBeInTheDocument()
+  })
+
+  test('shows the host retry state after disconnection and lets the user recreate the room', async () => {
+    const user = userEvent.setup()
+    onlineState = {
+      ...onlineState,
+      connectionState: 'disconnected',
+      errorMessage: '接続が切れました。',
+    }
+
+    renderAt('/online/create')
+
+    expect(await screen.findByText('接続が切れたため、部屋を作り直してください。')).toBeInTheDocument()
+    expect(screen.queryByLabelText('相手の応答コード')).not.toBeInTheDocument()
+
+    await user.click(await screen.findByRole('button', { name: '部屋を作り直す' }))
+    expect(createRoom).toHaveBeenCalledTimes(2)
+  })
+
+  test('keeps the answer-code input visible while the host submission is still in flight', async () => {
+    onlineState = {
+      ...onlineState,
+      isSubmittingAnswer: true,
+    }
+
+    renderAt('/online/create')
+
+    expect(await screen.findByLabelText('相手の応答コード')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '接続を開始中...' })).toBeDisabled()
+    expect(screen.queryByText('接続を確立しています。画面はそのままでお待ちください。')).not.toBeInTheDocument()
+  })
+
+  test('keeps the host on answer-code input even if peer state becomes connecting before answer acceptance', async () => {
+    onlineState = {
+      ...onlineState,
+      connectionState: 'connecting',
+      requiresAnswerCode: true,
+    }
+
+    renderAt('/online/create')
+
+    expect(await screen.findByLabelText('相手の応答コード')).toBeInTheDocument()
+    expect(screen.queryByText('接続を確立しています。画面はそのままでお待ちください。')).not.toBeInTheDocument()
+  })
+
+  test('disables the host retry button while room recreation is in flight', async () => {
+    onlineState = {
+      ...onlineState,
+      connectionState: 'disconnected',
+      errorMessage: '接続が切れました。',
+      isCreatingRoom: true,
+    }
+
+    renderAt('/online/create')
+
+    expect(await screen.findByRole('button', { name: '部屋を作り直し中...' })).toBeDisabled()
   })
 
   test('forwards join code input to joinRoom', async () => {
@@ -139,6 +201,39 @@ describe('App online logic', () => {
 
     expect(await screen.findByText('応答コードをホストに送る')).toBeInTheDocument()
     expect(await screen.findByDisplayValue('invite-code')).toBeInTheDocument()
+  })
+
+  test('keeps the guest on invite input while join is still in flight', async () => {
+    onlineState = {
+      ...onlineState,
+      localRole: null,
+      connectionState: 'idle',
+      inviteCode: '',
+      requiresAnswerCode: false,
+      isJoiningRoom: true,
+    }
+
+    renderAt('/online/join')
+
+    expect(await screen.findByLabelText('招待コード')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '応答コードを作成中...' })).toBeDisabled()
+    expect(screen.queryByText('応答コードをホストに送る')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('invite-code')).not.toBeInTheDocument()
+  })
+
+  test('shows invite input again when the guest flow is disconnected', async () => {
+    onlineState = {
+      ...onlineState,
+      localRole: 'guest',
+      connectionState: 'disconnected',
+      requiresAnswerCode: false,
+      errorMessage: '接続が切れました。',
+    }
+
+    renderAt('/online/join')
+
+    expect(await screen.findByLabelText('招待コード')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('invite-code')).not.toBeInTheDocument()
   })
 
   test('shows online match screen when connected and dispatches board moves', async () => {

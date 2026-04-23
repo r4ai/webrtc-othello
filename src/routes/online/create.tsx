@@ -1,18 +1,19 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { startTransition, useEffect, useOptimistic, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StatusLine } from '../../components/StatusLine'
-import { useOnlineMatchContext } from '../../effects/OnlineMatchContext'
+import { useOnlineMatchContext } from '../../effects/useOnlineMatchContext'
 import { Button } from '../../ui/Button'
 
 type CreateStep = 'preparing' | 'share' | 'connecting'
 
 function resolveStep(
   connectionState: string,
-  localRole: string | null,
-  inviteCode: string,
+  requiresAnswerCode: boolean,
+  canRetryRoom: boolean,
 ): CreateStep {
+  if (canRetryRoom) return 'preparing'
+  if (requiresAnswerCode) return 'share'
   if (connectionState === 'connecting') return 'connecting'
-  if (localRole === 'host' && inviteCode.length > 0) return 'share'
   return 'preparing'
 }
 
@@ -24,16 +25,13 @@ function CreateRoute() {
   const [copiedLink, setCopiedLink] = useState(false)
   const started = useRef(false)
 
-  const actualStep = resolveStep(
+  const canRetryRoom =
+    viewModel.connectionState === 'disconnected' || viewModel.connectionState === 'failed'
+  const currentStep = resolveStep(
     viewModel.connectionState,
-    viewModel.localRole,
-    viewModel.inviteCode,
+    viewModel.requiresAnswerCode,
+    canRetryRoom,
   )
-  const [optimisticStep, setOptimisticStep] = useOptimistic(
-    actualStep,
-    (_: CreateStep, next: CreateStep) => next,
-  )
-  const isBusy = optimisticStep !== actualStep
 
   useEffect(() => {
     if (!started.current) {
@@ -64,10 +62,7 @@ function CreateRoute() {
   }
 
   const handleConnect = () => {
-    startTransition(async () => {
-      setOptimisticStep('connecting')
-      await actions.submitAnswerCode(answerCode)
-    })
+    void actions.submitAnswerCode(answerCode)
   }
 
   return (
@@ -86,40 +81,54 @@ function CreateRoute() {
       {/* Step 1: Generating invite code */}
       <div
         className={
-          optimisticStep !== 'preparing'
+          currentStep !== 'preparing'
             ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-50'
             : 'rounded-2xl border border-white/15 bg-white/8 p-4'
         }
       >
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
-            {optimisticStep !== 'preparing' ? '✓' : '1'}
+            {currentStep !== 'preparing' ? '✓' : '1'}
           </span>
           <p className="text-base font-semibold">招待コードを生成</p>
         </div>
-        {optimisticStep === 'preparing' && (
-          <p className="mt-3 text-sm text-white/70">部屋を準備しています...</p>
+        {currentStep === 'preparing' && (
+          <div className="mt-3 flex flex-col gap-3">
+            <p className="text-sm text-white/70">
+              {canRetryRoom ? '接続が切れたため、部屋を作り直してください。' : '部屋を準備しています...'}
+            </p>
+            {canRetryRoom && (
+              <Button
+                className="w-full"
+                variant="secondary"
+                onPress={() => void actions.createRoom()}
+                isDisabled={viewModel.isCreatingRoom}
+              >
+                {viewModel.isCreatingRoom ? '部屋を作り直し中...' : '部屋を作り直す'}
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
       {/* Step 2: Share invite code + paste answer code */}
       <div
         className={
-          optimisticStep === 'preparing'
+          currentStep === 'preparing'
             ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-40'
-            : optimisticStep === 'connecting'
+            : currentStep === 'connecting'
               ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-50'
               : 'rounded-2xl border border-white/15 bg-white/8 p-4'
         }
       >
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
-            {optimisticStep === 'connecting' ? '✓' : '2'}
+            {currentStep === 'connecting' ? '✓' : '2'}
           </span>
           <p className="text-base font-semibold">相手に招待コードを送る</p>
         </div>
-        {optimisticStep === 'share' && (
-          <div className="mt-3 space-y-3">
+        {currentStep === 'share' && (
+          <div className="mt-3 flex flex-col gap-3">
             <p className="text-sm font-semibold text-white/70">招待コード</p>
             <textarea
               readOnly
@@ -169,9 +178,9 @@ function CreateRoute() {
             <Button
               className="w-full"
               onPress={handleConnect}
-              isDisabled={answerCode.trim().length === 0 || isBusy}
+              isDisabled={answerCode.trim().length === 0 || viewModel.isSubmittingAnswer}
             >
-              {isBusy ? '接続を開始中...' : '接続開始'}
+              {viewModel.isSubmittingAnswer ? '接続を開始中...' : '接続開始'}
             </Button>
           </div>
         )}
@@ -180,7 +189,7 @@ function CreateRoute() {
       {/* Step 3: Connecting */}
       <div
         className={
-          optimisticStep !== 'connecting'
+          currentStep !== 'connecting'
             ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-40'
             : 'rounded-2xl border border-white/15 bg-white/8 p-4'
         }
@@ -191,7 +200,7 @@ function CreateRoute() {
           </span>
           <p className="text-base font-semibold">接続を確立</p>
         </div>
-        {optimisticStep === 'connecting' && (
+        {currentStep === 'connecting' && (
           <p className="mt-3 text-sm text-white/70">
             接続を確立しています。画面はそのままでお待ちください。
           </p>

@@ -45,11 +45,27 @@ export function useOnlineMatch(): UseOnlineMatchResult {
   const [matchId, setMatchId] = useState<string | null>(null)
   const [revision, setRevision] = useState(0)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false)
+  const [isJoiningRoom, setIsJoiningRoom] = useState(false)
+  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false)
+  const [isAwaitingAnswerCode, setIsAwaitingAnswerCode] = useState(false)
   const [localRematchRequested, setLocalRematchRequested] = useState(false)
   const [peerRequestedRematch, setPeerRequestedRematch] = useState(false)
   const matchIdRef = useRef<string | null>(null)
   const revisionRef = useRef(0)
   const gameStateRef = useRef(gameState)
+  const createRoomPromiseRef = useRef<Promise<void> | null>(null)
+  const joinRoomPromiseRef = useRef<Promise<void> | null>(null)
+  const submitAnswerPromiseRef = useRef<Promise<void> | null>(null)
+
+  const clearPendingActions = useCallback(() => {
+    createRoomPromiseRef.current = null
+    joinRoomPromiseRef.current = null
+    submitAnswerPromiseRef.current = null
+    setIsCreatingRoom(false)
+    setIsJoiningRoom(false)
+    setIsSubmittingAnswer(false)
+  }, [])
 
   useEffect(() => {
     gameStateRef.current = gameState
@@ -216,6 +232,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
           return
         }
         case 'peer-left': {
+          clearPendingActions()
           setErrorMessage('相手が切断しました。')
           return
         }
@@ -226,6 +243,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
       }
     },
     onConnectionLost: () => {
+      clearPendingActions()
       setErrorMessage('接続が切れました。')
     },
   })
@@ -235,52 +253,106 @@ export function useOnlineMatch(): UseOnlineMatchResult {
     setGameState(initialState)
     setRevision(0)
     revisionRef.current = 0
+    clearPendingActions()
+    setIsAwaitingAnswerCode(false)
     setLocalRematchRequested(false)
     setPeerRequestedRematch(false)
     setErrorMessage(null)
-  }, [])
+  }, [clearPendingActions])
 
-  const createRoom = useCallback(async () => {
-    try {
-      resetLocalState()
-      const nextMatchId = createMatchId()
-      setMatchId(nextMatchId)
-      matchIdRef.current = nextMatchId
-      await createPeerRoom()
-    } catch (error) {
-      leaveConnection()
-      matchIdRef.current = null
-      setMatchId(null)
-      resetLocalState()
-      setErrorMessage(toErrorMessage(error))
+  const createRoom = useCallback(() => {
+    if (createRoomPromiseRef.current !== null) {
+      return createRoomPromiseRef.current
     }
-  }, [createPeerRoom, leaveConnection, resetLocalState])
 
-  const joinRoom = useCallback(
-    async (inviteCode: string) => {
+    const request = (async () => {
+      setIsCreatingRoom(true)
+      setIsJoiningRoom(false)
+      setIsSubmittingAnswer(false)
+      setIsAwaitingAnswerCode(false)
+
       try {
         resetLocalState()
-        setMatchId(null)
-        matchIdRef.current = null
-        await joinPeerRoom(inviteCode)
+        setIsCreatingRoom(true)
+        const nextMatchId = createMatchId()
+        setMatchId(nextMatchId)
+        matchIdRef.current = nextMatchId
+        await createPeerRoom()
+        setIsAwaitingAnswerCode(true)
       } catch (error) {
         leaveConnection()
         matchIdRef.current = null
         setMatchId(null)
         resetLocalState()
         setErrorMessage(toErrorMessage(error))
+      } finally {
+        setIsCreatingRoom(false)
+        createRoomPromiseRef.current = null
       }
+    })()
+
+    createRoomPromiseRef.current = request
+    return request
+  }, [createPeerRoom, leaveConnection, resetLocalState])
+
+  const joinRoom = useCallback(
+    (inviteCode: string) => {
+      if (joinRoomPromiseRef.current !== null) {
+        return joinRoomPromiseRef.current
+      }
+
+      const request = (async () => {
+        setIsJoiningRoom(true)
+        setIsCreatingRoom(false)
+        setIsSubmittingAnswer(false)
+        setIsAwaitingAnswerCode(false)
+
+        try {
+          resetLocalState()
+          setIsJoiningRoom(true)
+          setMatchId(null)
+          matchIdRef.current = null
+          await joinPeerRoom(inviteCode)
+        } catch (error) {
+          leaveConnection()
+          matchIdRef.current = null
+          setMatchId(null)
+          resetLocalState()
+          setErrorMessage(toErrorMessage(error))
+        } finally {
+          setIsJoiningRoom(false)
+          joinRoomPromiseRef.current = null
+        }
+      })()
+
+      joinRoomPromiseRef.current = request
+      return request
     },
     [joinPeerRoom, leaveConnection, resetLocalState],
   )
 
   const submitAnswerCode = useCallback(
-    async (inviteCode: string) => {
-      try {
-        await acceptGuestAnswer(inviteCode)
-      } catch (error) {
-        setErrorMessage(toErrorMessage(error))
+    (inviteCode: string) => {
+      if (submitAnswerPromiseRef.current !== null) {
+        return submitAnswerPromiseRef.current
       }
+
+      const request = (async () => {
+        setIsSubmittingAnswer(true)
+
+        try {
+          await acceptGuestAnswer(inviteCode)
+          setIsAwaitingAnswerCode(false)
+        } catch (error) {
+          setErrorMessage(toErrorMessage(error))
+        } finally {
+          setIsSubmittingAnswer(false)
+          submitAnswerPromiseRef.current = null
+        }
+      })()
+
+      submitAnswerPromiseRef.current = request
+      return request
     },
     [acceptGuestAnswer],
   )
@@ -436,6 +508,9 @@ export function useOnlineMatch(): UseOnlineMatchResult {
       connectionState,
       inviteCode,
       errorMessage: errorMessage ?? peerErrorMessage,
+      isCreatingRoom,
+      isJoiningRoom,
+      isSubmittingAnswer,
       canInteract,
       canRequestRematch: connectionState === 'connected' && gameState.status === 'finished',
       localPlayerLabel: localRole === 'host' ? '黒' : localRole === 'guest' ? '白' : '未参加',
@@ -443,8 +518,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
       revision,
       pendingRematch: localRematchRequested,
       peerRequestedRematch,
-      requiresAnswerCode:
-        localRole === 'host' && connectionState !== 'connected' && inviteCode.length > 0,
+      requiresAnswerCode: isAwaitingAnswerCode,
     },
     actions: {
       createRoom,

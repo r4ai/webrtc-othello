@@ -28,7 +28,7 @@ export function OnlineControls({
       : '再戦'
 
   return (
-    <section className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-4">
+    <section className="flex flex-col gap-4 rounded-2xl border border-white/20 bg-white/10 p-4">
       <p className="text-sm text-white/85">{message}</p>
 
       <div className="flex flex-col gap-2">

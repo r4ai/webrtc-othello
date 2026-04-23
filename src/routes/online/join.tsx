@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { startTransition, useEffect, useOptimistic, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { StatusLine } from '../../components/StatusLine'
-import { useOnlineMatchContext } from '../../effects/OnlineMatchContext'
+import { useOnlineMatchContext } from '../../effects/useOnlineMatchContext'
 import { Button } from '../../ui/Button'
 
 type JoinStep = 'input' | 'response' | 'connecting'
@@ -12,7 +12,9 @@ function resolveStep(
   inviteCode: string,
 ): JoinStep {
   if (connectionState === 'connecting') return 'connecting'
-  if (localRole === 'guest' && inviteCode.length > 0) return 'response'
+  if (connectionState === 'code-ready' && localRole === 'guest' && inviteCode.length > 0) {
+    return 'response'
+  }
   return 'input'
 }
 
@@ -23,16 +25,11 @@ function JoinRoute() {
   const [joinCode, setJoinCode] = useState(() => prefillCode)
   const [copiedCode, setCopiedCode] = useState('')
 
-  const actualStep = resolveStep(
+  const currentStep = resolveStep(
     viewModel.connectionState,
     viewModel.localRole,
     viewModel.inviteCode,
   )
-  const [optimisticStep, setOptimisticStep] = useOptimistic(
-    actualStep,
-    (_: JoinStep, next: JoinStep) => next,
-  )
-  const isBusy = optimisticStep !== actualStep
   const copied = viewModel.inviteCode.length > 0 && copiedCode === viewModel.inviteCode
 
   useEffect(() => {
@@ -42,10 +39,7 @@ function JoinRoute() {
   }, [viewModel.connectionState, navigate])
 
   const handleJoin = () => {
-    startTransition(async () => {
-      setOptimisticStep('response')
-      await actions.joinRoom(joinCode)
-    })
+    void actions.joinRoom(joinCode)
   }
 
   const handleCopyResponse = async () => {
@@ -69,19 +63,19 @@ function JoinRoute() {
       {/* Step 1: Paste invite code */}
       <div
         className={
-          optimisticStep !== 'input'
+          currentStep !== 'input'
             ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-50'
             : 'rounded-2xl border border-white/15 bg-white/8 p-4'
         }
       >
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
-            {optimisticStep !== 'input' ? '✓' : '1'}
+            {currentStep !== 'input' ? '✓' : '1'}
           </span>
           <p className="text-base font-semibold">招待コードを貼り付ける</p>
         </div>
-        {optimisticStep === 'input' && (
-          <div className="mt-3 space-y-3">
+        {currentStep === 'input' && (
+          <div className="mt-3 flex flex-col gap-3">
             <div>
               <label
                 className="block text-sm font-semibold text-white/70"
@@ -101,9 +95,9 @@ function JoinRoute() {
             <Button
               className="w-full"
               onPress={handleJoin}
-              isDisabled={joinCode.trim().length === 0 || isBusy}
+              isDisabled={joinCode.trim().length === 0 || viewModel.isJoiningRoom}
             >
-              {isBusy ? '応答コードを作成中...' : '応答コードを生成'}
+              {viewModel.isJoiningRoom ? '応答コードを作成中...' : '応答コードを生成'}
             </Button>
           </div>
         )}
@@ -112,21 +106,21 @@ function JoinRoute() {
       {/* Step 2: Copy response code */}
       <div
         className={
-          optimisticStep === 'input'
+          currentStep === 'input'
             ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-40'
-            : optimisticStep === 'connecting'
+            : currentStep === 'connecting'
               ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-50'
               : 'rounded-2xl border border-white/15 bg-white/8 p-4'
         }
       >
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
-            {optimisticStep === 'connecting' ? '✓' : '2'}
+            {currentStep === 'connecting' ? '✓' : '2'}
           </span>
           <p className="text-base font-semibold">応答コードをホストに送る</p>
         </div>
-        {optimisticStep === 'response' && (
-          <div className="mt-3 space-y-3">
+        {currentStep === 'response' && (
+          <div className="mt-3 flex flex-col gap-3">
             <p className="text-sm text-white/70">
               この応答コードをホストに送り、接続承認を待ってください。
             </p>
@@ -152,7 +146,7 @@ function JoinRoute() {
       {/* Step 3: Waiting for host */}
       <div
         className={
-          optimisticStep !== 'connecting'
+          currentStep !== 'connecting'
             ? 'rounded-2xl border border-white/10 bg-white/3 p-4 opacity-40'
             : 'rounded-2xl border border-white/15 bg-white/8 p-4'
         }
@@ -163,7 +157,7 @@ function JoinRoute() {
           </span>
           <p className="text-base font-semibold">ホストの接続承認を待つ</p>
         </div>
-        {optimisticStep === 'connecting' && (
+        {currentStep === 'connecting' && (
           <p className="mt-3 text-sm text-white/70">
             接続を確立しています。画面はそのままでお待ちください。
           </p>

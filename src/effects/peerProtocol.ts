@@ -29,6 +29,9 @@ export interface OnlineMatchViewModel {
   connectionState: MatchConnectionState
   inviteCode: string
   errorMessage: string | null
+  isCreatingRoom: boolean
+  isJoiningRoom: boolean
+  isSubmittingAnswer: boolean
   canInteract: boolean
   canRequestRematch: boolean
   localPlayerLabel: string
