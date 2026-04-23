@@ -29,4 +29,30 @@ describe('GameStatus', () => {
     expect(getByText('ゲーム終了')).toBeInTheDocument()
     expect(getByText('白の勝ちです。')).toBeInTheDocument()
   })
+
+  test('prompts for a pass when the current player has no legal moves', () => {
+    const { getByText } = render(
+      <GameStatus
+        status="playing"
+        currentPlayer="white"
+        winner={null}
+        validMovesCount={0}
+      />,
+    )
+
+    expect(getByText('白は打てる手がありません。パスしてください。')).toBeInTheDocument()
+  })
+
+  test('shows draw text for a finished tied game', () => {
+    const { getByText } = render(
+      <GameStatus
+        status="finished"
+        currentPlayer="black"
+        winner="draw"
+        validMovesCount={0}
+      />,
+    )
+
+    expect(getByText('引き分けです。')).toBeInTheDocument()
+  })
 })

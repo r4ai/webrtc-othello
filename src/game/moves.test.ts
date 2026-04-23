@@ -1,8 +1,19 @@
 import { describe, expect, test } from 'vitest'
 import { createEmptyBoard, createInitialBoard } from './board'
-import { applyMove, getValidMoves, isValidMove } from './moves'
+import {
+  applyMove,
+  getFlipsForMove,
+  getOpponent,
+  getValidMoves,
+  isValidMove,
+} from './moves'
 
 describe('moves', () => {
+  test('returns the opposing player', () => {
+    expect(getOpponent('black')).toBe('white')
+    expect(getOpponent('white')).toBe('black')
+  })
+
   test('returns the four opening moves for black', () => {
     const board = createInitialBoard()
 
@@ -71,6 +82,21 @@ describe('moves', () => {
 
     const next = applyMove(board, 'black', { row: 0, col: 0 })
     expect(next[0][1]).toBe('black')
+  })
+
+  test('returns no flips for out-of-bounds or occupied cells', () => {
+    const board = createInitialBoard()
+
+    expect(getFlipsForMove(board, 'black', { row: -1, col: 0 })).toEqual([])
+    expect(getFlipsForMove(board, 'black', { row: 3, col: 3 })).toEqual([])
+  })
+
+  test('returns no flips when a line is not enclosed by the current player', () => {
+    const board = createEmptyBoard()
+    board[3][4] = 'white'
+
+    expect(getFlipsForMove(board, 'black', { row: 3, col: 3 })).toEqual([])
+    expect(isValidMove(board, 'black', { row: 3, col: 3 })).toBe(false)
   })
 
   test('throws on invalid moves', () => {

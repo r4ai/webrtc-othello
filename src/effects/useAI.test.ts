@@ -84,4 +84,88 @@ describe('useAI', () => {
 
     expect(onResolveMove).not.toHaveBeenCalled()
   })
+
+  test('does not run when the game is already finished', () => {
+    const board = parseBoard([
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+    ])
+
+    const state = createGameState(board, 'white')
+    const onResolveMove = vi.fn()
+
+    renderHook(() =>
+      useAI({
+        enabled: true,
+        aiPlayer: 'white',
+        state,
+        onResolveMove,
+      }),
+    )
+
+    vi.advanceTimersByTime(500)
+
+    expect(onResolveMove).not.toHaveBeenCalled()
+  })
+
+  test('does not run when it is not the AI players turn', () => {
+    const state = createGameState(parseBoard([
+      '.WBBBBBB',
+      'WWWWWWWB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBB.',
+    ]), 'black')
+    const onResolveMove = vi.fn()
+
+    renderHook(() =>
+      useAI({
+        enabled: true,
+        aiPlayer: 'white',
+        state,
+        onResolveMove,
+      }),
+    )
+
+    vi.advanceTimersByTime(500)
+
+    expect(onResolveMove).not.toHaveBeenCalled()
+  })
+
+  test('clears the scheduled timer on unmount', () => {
+    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout')
+    const state = createGameState(parseBoard([
+      '.WBBBBBB',
+      'WWWWWWWB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBB.',
+    ]), 'black')
+
+    const { unmount } = renderHook(() =>
+      useAI({
+        enabled: true,
+        aiPlayer: 'black',
+        state,
+        onResolveMove: vi.fn(),
+        delayMs: 50,
+      }),
+    )
+
+    unmount()
+
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(1)
+  })
 })

@@ -88,6 +88,66 @@ describe('game', () => {
     expect(state.winner).toBe('draw')
   })
 
+  test('stays in playing state when only the opponent has a legal move', () => {
+    const board = parseBoard([
+      '.BWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+    ])
+
+    const state = createGameState(board, 'black')
+
+    expect(state.status).toBe('playing')
+    expect(state.validMoves).toEqual([])
+  })
+
+  test('finishes after two consecutive passes even if the board is not full', () => {
+    const board = parseBoard([
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBB.BBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+      'BBBBBBBB',
+    ])
+
+    const state = createGameState(board, 'white', 2)
+
+    expect(state.status).toBe('finished')
+    expect(state.winner).toBe('black')
+  })
+
+  test('finishes when neither player has a legal move on a non-full board', () => {
+    const board = parseBoard([
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWW.WWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+      'WWWWWWWW',
+    ])
+
+    const state = createGameState(board, 'black')
+
+    expect(state.status).toBe('finished')
+    expect(state.winner).toBe('white')
+  })
+
+  test('throws when trying to pass while a legal move exists', () => {
+    const state = createInitialGameState()
+
+    expect(() => playTurn(state, null)).toThrow('Pass is only allowed')
+  })
+
   test('throws when trying to play after game is finished', () => {
     const board = parseBoard([
       'BBBBBBBB',
