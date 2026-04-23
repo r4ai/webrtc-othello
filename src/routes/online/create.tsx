@@ -95,7 +95,7 @@ function CreateRoute() {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
             {optimisticStep !== 'preparing' ? '✓' : '1'}
           </span>
-          <p className="text-sm font-semibold">招待コードを生成</p>
+          <p className="text-base font-semibold">招待コードを生成</p>
         </div>
         {optimisticStep === 'preparing' && (
           <p className="mt-3 text-sm text-white/70">部屋を準備しています...</p>
@@ -116,7 +116,7 @@ function CreateRoute() {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
             {optimisticStep === 'connecting' ? '✓' : '2'}
           </span>
-          <p className="text-sm font-semibold">相手に招待コードを送る</p>
+          <p className="text-base font-semibold">相手に招待コードを送る</p>
         </div>
         {optimisticStep === 'share' && (
           <div className="mt-3 space-y-3">
@@ -189,7 +189,7 @@ function CreateRoute() {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
             3
           </span>
-          <p className="text-sm font-semibold">接続を確立</p>
+          <p className="text-base font-semibold">接続を確立</p>
         </div>
         {optimisticStep === 'connecting' && (
           <p className="mt-3 text-sm text-white/70">

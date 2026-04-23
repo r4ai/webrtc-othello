@@ -98,7 +98,7 @@ function SoloRoute() {
         />
         <GameStatus title={statusTitle} detail={statusDetail} />
 
-        <section className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-4">
+        <section className="flex flex-col gap-4 rounded-2xl border border-white/20 bg-white/10 p-4">
           <Toggle label="白をAIで操作" isSelected={aiEnabled} onChange={setAiEnabled} />
           {controlsHelperText && (
             <p className="text-sm text-white/75">{controlsHelperText}</p>

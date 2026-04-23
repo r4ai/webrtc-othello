@@ -78,7 +78,7 @@ function JoinRoute() {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
             {optimisticStep !== 'input' ? '✓' : '1'}
           </span>
-          <p className="text-sm font-semibold">招待コードを貼り付ける</p>
+          <p className="text-base font-semibold">招待コードを貼り付ける</p>
         </div>
         {optimisticStep === 'input' && (
           <div className="mt-3 space-y-3">
@@ -123,7 +123,7 @@ function JoinRoute() {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
             {optimisticStep === 'connecting' ? '✓' : '2'}
           </span>
-          <p className="text-sm font-semibold">応答コードをホストに送る</p>
+          <p className="text-base font-semibold">応答コードをホストに送る</p>
         </div>
         {optimisticStep === 'response' && (
           <div className="mt-3 space-y-3">
@@ -161,7 +161,7 @@ function JoinRoute() {
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/30 text-xs font-bold text-emerald-300">
             3
           </span>
-          <p className="text-sm font-semibold">ホストの接続承認を待つ</p>
+          <p className="text-base font-semibold">ホストの接続承認を待つ</p>
         </div>
         {optimisticStep === 'connecting' && (
           <p className="mt-3 text-sm text-white/70">
