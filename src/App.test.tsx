@@ -1,25 +1,48 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, test } from 'vitest'
 import App from './App'
 
-describe('App', () => {
-  test('renders mode picker on first view', () => {
-    render(<App />)
+function renderAt(pathname = '/') {
+  window.history.pushState({}, '', pathname)
+  return render(<App />)
+}
 
-    expect(screen.getByText('Othello Engine + UI')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'ひとりで遊ぶ' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'オンライン対戦' })).toBeInTheDocument()
+describe('App', () => {
+  test('renders mode picker on first view', async () => {
+    renderAt('/')
+
+    expect(await screen.findByText('Othello Engine + UI')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'ひとりで遊ぶ' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'オンライン対戦' })).toBeInTheDocument()
   })
 
   test('enters solo mode and accepts a legal opening move', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
-    await user.click(screen.getByRole('button', { name: 'ひとりで遊ぶ' }))
-    await user.click(screen.getByLabelText('3行4列 置けます'))
+    renderAt('/')
+    await user.click(await screen.findByRole('button', { name: 'ひとりで遊ぶ' }))
+    expect(window.location.pathname).toBe('/solo')
+    await user.click(await screen.findByLabelText('3行4列 置けます'))
 
-    expect(screen.getByRole('grid', { name: 'オセロボード' })).toBeInTheDocument()
-    expect(screen.getByText('白の番です。')).toBeInTheDocument()
+    expect(await screen.findByRole('grid', { name: 'オセロボード' })).toBeInTheDocument()
+    expect(await screen.findByText('白の番です。')).toBeInTheDocument()
+  })
+
+  test('supports browser back navigation between routed screens', async () => {
+    const user = userEvent.setup()
+
+    renderAt('/')
+    await user.click(await screen.findByRole('button', { name: 'ひとりで遊ぶ' }))
+    expect(window.location.pathname).toBe('/solo')
+
+    act(() => {
+      window.history.back()
+    })
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/')
+      expect(screen.getByRole('button', { name: 'オンライン対戦' })).toBeInTheDocument()
+    })
   })
 })

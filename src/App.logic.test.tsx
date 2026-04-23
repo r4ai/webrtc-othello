@@ -50,6 +50,11 @@ vi.mock('./effects/useOnlineMatch', () => ({
   }),
 }))
 
+function renderAt(pathname = '/') {
+  window.history.pushState({}, '', pathname)
+  return render(<App />)
+}
+
 describe('App online logic', () => {
   beforeEach(() => {
     createRoom.mockReset()
@@ -61,6 +66,13 @@ describe('App online logic', () => {
     leaveMatch.mockReset()
     copyInviteCode.mockReset()
     copyInviteCode.mockResolvedValue(true)
+    leaveMatch.mockImplementation(() => {
+      onlineState = {
+        ...onlineState,
+        connectionState: 'disconnected',
+        requiresAnswerCode: false,
+      }
+    })
     onlineState = {
       gameState: {
         board: [] as never[],
@@ -87,23 +99,19 @@ describe('App online logic', () => {
   })
 
   test('shows online setup flow with invite and answer inputs', async () => {
-    const user = userEvent.setup()
+    renderAt('/online')
 
-    render(<App />)
-    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
-
-    expect(screen.getByText('オンライン対戦')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('invite-code')).toBeInTheDocument()
-    expect(screen.getByLabelText('参加者の応答コード')).toBeInTheDocument()
+    expect(await screen.findByText('オンライン対戦')).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('invite-code')).toBeInTheDocument()
+    expect(await screen.findByLabelText('参加者の応答コード')).toBeInTheDocument()
   })
 
   test('forwards join code input to joinRoom', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
-    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
-    await user.type(screen.getByLabelText('部屋に入る'), 'host-offer')
-    await user.click(screen.getByRole('button', { name: '招待コードで入室' }))
+    renderAt('/online')
+    await user.type(await screen.findByLabelText('部屋に入る'), 'host-offer')
+    await user.click(await screen.findByRole('button', { name: '招待コードで入室' }))
 
     expect(joinRoom).toHaveBeenCalledWith('host-offer')
   })
@@ -125,11 +133,10 @@ describe('App online logic', () => {
       },
     }
 
-    render(<App />)
-    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
-    await user.click(screen.getByLabelText('3行4列 置けます'))
+    renderAt('/online')
+    await user.click(await screen.findByLabelText('3行4列 置けます'))
 
-    expect(screen.getByText(/あなたの石: 黒/)).toBeInTheDocument()
+    expect(await screen.findByText(/あなたの石: 黒/)).toBeInTheDocument()
     expect(submitMove).toHaveBeenCalledWith({ row: 2, col: 3 })
   })
 
@@ -150,10 +157,13 @@ describe('App online logic', () => {
       canRequestRematch: true,
     }
 
-    render(<App />)
-    await user.click(screen.getByRole('button', { name: 'オンライン対戦' }))
-    await user.click(screen.getByRole('button', { name: '切断' }))
+    const { unmount } = renderAt('/online')
+    await user.click(await screen.findByRole('button', { name: '切断' }))
+    unmount()
+    renderAt('/online')
 
     expect(leaveMatch).toHaveBeenCalledTimes(1)
+    expect(await screen.findByText('オンライン対戦')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '部屋を作る' })).toBeInTheDocument()
   })
 })

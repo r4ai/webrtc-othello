@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@tanstack/react-router": "1.168.23",
     "clsx": "^2.1.1",
     "react": "^19.2.5",
     "react-aria-components": "^1.17.0",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@tailwindcss/vite": "^4.2.4",
+    "@tanstack/router-plugin": "1.167.22",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
