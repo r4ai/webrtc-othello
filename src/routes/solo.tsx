@@ -96,7 +96,7 @@ function SoloRoute() {
 
   return (
     <section className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
-      <div className="w-full rounded-[calc(var(--radius-board)+8px)] border border-white/15 bg-black/25 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm lg:w-120 lg:shrink-0">
+      <div className="flex w-full flex-col items-center rounded-[calc(var(--radius-board)+8px)] border border-white/15 bg-black/25 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm lg:w-120 lg:shrink-0">
         <Board
           board={state.board}
           validMoves={state.validMoves}
