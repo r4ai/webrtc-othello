@@ -120,7 +120,7 @@ function CreateRoute() {
         </div>
         {optimisticStep === 'share' && (
           <div className="mt-3 space-y-3">
-            <p className="text-xs font-semibold text-white/70">招待コード</p>
+            <p className="text-sm font-semibold text-white/70">招待コード</p>
             <textarea
               readOnly
               value={viewModel.inviteCode}
@@ -147,12 +147,12 @@ function CreateRoute() {
 
             <hr className="border-white/15" />
 
-            <p className="text-xs text-white/70">
+            <p className="text-sm text-white/70">
               相手が参加したら、届いた応答コードを入力してください。
             </p>
             <div>
               <label
-                className="block text-xs font-semibold text-white/70"
+                className="block text-sm font-semibold text-white/70"
                 htmlFor="answer-code"
               >
                 相手の応答コード

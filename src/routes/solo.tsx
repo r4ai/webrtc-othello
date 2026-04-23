@@ -98,15 +98,12 @@ function SoloRoute() {
         />
         <GameStatus title={statusTitle} detail={statusDetail} />
 
-        <section className="rounded-2xl border border-white/20 bg-white/10 p-4">
+        <section className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-4">
           <Toggle label="白をAIで操作" isSelected={aiEnabled} onChange={setAiEnabled} />
-        </section>
-
-        <section className="space-y-3 rounded-2xl border border-white/20 bg-white/10 p-4">
           {controlsHelperText && (
-            <p className="text-sm text-white/90">{controlsHelperText}</p>
+            <p className="text-sm text-white/75">{controlsHelperText}</p>
           )}
-          <Button variant="secondary" onPress={resetGame}>
+          <Button variant="secondary" onPress={resetGame} className="w-full">
             最初から
           </Button>
         </section>

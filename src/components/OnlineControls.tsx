@@ -28,21 +28,26 @@ export function OnlineControls({
       : '再戦'
 
   return (
-    <section className="space-y-3 rounded-2xl border border-white/20 bg-white/10 p-4">
-      <p className="text-sm text-white/90">{message}</p>
+    <section className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-4">
+      <p className="text-sm text-white/85">{message}</p>
 
-      <div className="flex flex-wrap gap-3">
-        <Button variant="ghost" onPress={onPass} isDisabled={!canPass}>
-          パス
-        </Button>
-        <Button
-          variant="secondary"
-          onPress={onRematch}
-          isDisabled={!canRequestRematch || pendingRematch}
-        >
-          {rematchLabel}
-        </Button>
-        <Button variant="ghost" onPress={onLeave}>
+      <div className="flex flex-col gap-2">
+        {canPass && (
+          <Button className="w-full" onPress={onPass}>
+            パス
+          </Button>
+        )}
+        {canRequestRematch && (
+          <Button
+            className="w-full"
+            variant="secondary"
+            onPress={onRematch}
+            isDisabled={pendingRematch}
+          >
+            {rematchLabel}
+          </Button>
+        )}
+        <Button className="w-full" variant="ghost" onPress={onLeave}>
           対戦を終了
         </Button>
       </div>

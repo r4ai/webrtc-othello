@@ -13,10 +13,10 @@ function RootLayout() {
             <button
               type="button"
               onClick={() => navigate({ to: '/' })}
-              className="shrink-0 text-lg font-semibold text-white/70 transition hover:text-white"
+              className="shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
               aria-label="ホームへ戻る"
             >
-              ←
+              ← 戻る
             </button>
           )}
           <h1 className="text-2xl font-black tracking-tight md:text-3xl">WebRTC Othello</h1>

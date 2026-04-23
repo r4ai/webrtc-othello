@@ -84,7 +84,7 @@ function JoinRoute() {
           <div className="mt-3 space-y-3">
             <div>
               <label
-                className="block text-xs font-semibold text-white/70"
+                className="block text-sm font-semibold text-white/70"
                 htmlFor="join-code"
               >
                 招待コード
@@ -127,10 +127,10 @@ function JoinRoute() {
         </div>
         {optimisticStep === 'response' && (
           <div className="mt-3 space-y-3">
-            <p className="text-xs text-white/70">
+            <p className="text-sm text-white/70">
               この応答コードをホストに送り、接続承認を待ってください。
             </p>
-            <p className="text-xs font-semibold text-white/70">応答コード</p>
+            <p className="text-sm font-semibold text-white/70">応答コード</p>
             <textarea
               readOnly
               value={viewModel.inviteCode}
