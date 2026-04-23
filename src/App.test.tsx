@@ -12,7 +12,7 @@ describe('App', () => {
   test('renders mode picker on first view', async () => {
     renderAt('/')
 
-    expect(await screen.findByText('Othello Engine + UI')).toBeInTheDocument()
+    expect(await screen.findByText('WebRTC Othello')).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'ひとりで遊ぶ' })).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'オンライン対戦' })).toBeInTheDocument()
   })
@@ -26,7 +26,7 @@ describe('App', () => {
     await user.click(await screen.findByLabelText('3行4列 置けます'))
 
     expect(await screen.findByRole('grid', { name: 'オセロボード' })).toBeInTheDocument()
-    expect(await screen.findByText('白の番です。AIが考えています。')).toBeInTheDocument()
+    expect(await screen.findByText('AIが考えています...')).toBeInTheDocument()
   })
 
   test('supports browser back navigation between routed screens', async () => {

@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SoloRouteImport } from './routes/solo'
 import { Route as OnlineRouteImport } from './routes/online'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnlineIndexRouteImport } from './routes/online/index'
+import { Route as OnlineMatchRouteImport } from './routes/online/match'
+import { Route as OnlineJoinRouteImport } from './routes/online/join'
+import { Route as OnlineCreateRouteImport } from './routes/online/create'
 
 const SoloRoute = SoloRouteImport.update({
   id: '/solo',
@@ -28,34 +32,86 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnlineIndexRoute = OnlineIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OnlineRoute,
+} as any)
+const OnlineMatchRoute = OnlineMatchRouteImport.update({
+  id: '/match',
+  path: '/match',
+  getParentRoute: () => OnlineRoute,
+} as any)
+const OnlineJoinRoute = OnlineJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => OnlineRoute,
+} as any)
+const OnlineCreateRoute = OnlineCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => OnlineRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/online': typeof OnlineRoute
+  '/online': typeof OnlineRouteWithChildren
   '/solo': typeof SoloRoute
+  '/online/create': typeof OnlineCreateRoute
+  '/online/join': typeof OnlineJoinRoute
+  '/online/match': typeof OnlineMatchRoute
+  '/online/': typeof OnlineIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/online': typeof OnlineRoute
   '/solo': typeof SoloRoute
+  '/online/create': typeof OnlineCreateRoute
+  '/online/join': typeof OnlineJoinRoute
+  '/online/match': typeof OnlineMatchRoute
+  '/online': typeof OnlineIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/online': typeof OnlineRoute
+  '/online': typeof OnlineRouteWithChildren
   '/solo': typeof SoloRoute
+  '/online/create': typeof OnlineCreateRoute
+  '/online/join': typeof OnlineJoinRoute
+  '/online/match': typeof OnlineMatchRoute
+  '/online/': typeof OnlineIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/online' | '/solo'
+  fullPaths:
+    | '/'
+    | '/online'
+    | '/solo'
+    | '/online/create'
+    | '/online/join'
+    | '/online/match'
+    | '/online/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/online' | '/solo'
-  id: '__root__' | '/' | '/online' | '/solo'
+  to:
+    | '/'
+    | '/solo'
+    | '/online/create'
+    | '/online/join'
+    | '/online/match'
+    | '/online'
+  id:
+    | '__root__'
+    | '/'
+    | '/online'
+    | '/solo'
+    | '/online/create'
+    | '/online/join'
+    | '/online/match'
+    | '/online/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  OnlineRoute: typeof OnlineRoute
+  OnlineRoute: typeof OnlineRouteWithChildren
   SoloRoute: typeof SoloRoute
 }
 
@@ -82,12 +138,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/online/': {
+      id: '/online/'
+      path: '/'
+      fullPath: '/online/'
+      preLoaderRoute: typeof OnlineIndexRouteImport
+      parentRoute: typeof OnlineRoute
+    }
+    '/online/match': {
+      id: '/online/match'
+      path: '/match'
+      fullPath: '/online/match'
+      preLoaderRoute: typeof OnlineMatchRouteImport
+      parentRoute: typeof OnlineRoute
+    }
+    '/online/join': {
+      id: '/online/join'
+      path: '/join'
+      fullPath: '/online/join'
+      preLoaderRoute: typeof OnlineJoinRouteImport
+      parentRoute: typeof OnlineRoute
+    }
+    '/online/create': {
+      id: '/online/create'
+      path: '/create'
+      fullPath: '/online/create'
+      preLoaderRoute: typeof OnlineCreateRouteImport
+      parentRoute: typeof OnlineRoute
+    }
   }
 }
 
+interface OnlineRouteChildren {
+  OnlineCreateRoute: typeof OnlineCreateRoute
+  OnlineJoinRoute: typeof OnlineJoinRoute
+  OnlineMatchRoute: typeof OnlineMatchRoute
+  OnlineIndexRoute: typeof OnlineIndexRoute
+}
+
+const OnlineRouteChildren: OnlineRouteChildren = {
+  OnlineCreateRoute: OnlineCreateRoute,
+  OnlineJoinRoute: OnlineJoinRoute,
+  OnlineMatchRoute: OnlineMatchRoute,
+  OnlineIndexRoute: OnlineIndexRoute,
+}
+
+const OnlineRouteWithChildren =
+  OnlineRoute._addFileChildren(OnlineRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  OnlineRoute: OnlineRoute,
+  OnlineRoute: OnlineRouteWithChildren,
   SoloRoute: SoloRoute,
 }
 export const routeTree = rootRouteImport

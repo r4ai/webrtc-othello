@@ -66,6 +66,9 @@ describe('App online logic', () => {
     leaveMatch.mockReset()
     copyInviteCode.mockReset()
     copyInviteCode.mockResolvedValue(true)
+    createRoom.mockResolvedValue(undefined)
+    joinRoom.mockResolvedValue(undefined)
+    submitAnswerCode.mockResolvedValue(undefined)
     leaveMatch.mockImplementation(() => {
       onlineState = {
         ...onlineState,
@@ -98,11 +101,10 @@ describe('App online logic', () => {
     }
   })
 
-  test('shows online setup flow with invite and answer inputs', async () => {
-    renderAt('/online')
+  test('shows host create flow with invite code and answer code input', async () => {
+    renderAt('/online/create')
 
-    expect(await screen.findByText('オンライン対戦')).toBeInTheDocument()
-    expect(await screen.findByText('1. 招待コードを相手に送る 2. 相手から届いた応答コードを貼り付ける')).toBeInTheDocument()
+    expect(await screen.findByText('部屋を作る')).toBeInTheDocument()
     expect(await screen.findByDisplayValue('invite-code')).toBeInTheDocument()
     expect(await screen.findByLabelText('相手の応答コード')).toBeInTheDocument()
   })
@@ -120,12 +122,12 @@ describe('App online logic', () => {
     renderAt('/online')
     await user.click(await screen.findByRole('button', { name: '招待コードで参加' }))
     await user.type(await screen.findByLabelText('招待コード'), 'host-offer')
-    await user.click(await screen.findByRole('button', { name: '応答コードを作る' }))
+    await user.click(await screen.findByRole('button', { name: '応答コードを生成' }))
 
     expect(joinRoom).toHaveBeenCalledWith('host-offer')
   })
 
-  test('shows guest answer flow after joining with an invite code', async () => {
+  test('shows guest response code after joining with an invite code', async () => {
     onlineState = {
       ...onlineState,
       localRole: 'guest',
@@ -133,10 +135,10 @@ describe('App online logic', () => {
       requiresAnswerCode: false,
     }
 
-    renderAt('/online')
+    renderAt('/online/join')
 
-    expect(await screen.findByText('この応答コードをホストに送り、接続完了まで待ってください。')).toBeInTheDocument()
-    expect(await screen.findByText('応答コード')).toBeInTheDocument()
+    expect(await screen.findByText('応答コードをホストに送る')).toBeInTheDocument()
+    expect(await screen.findByDisplayValue('invite-code')).toBeInTheDocument()
   })
 
   test('shows online match screen when connected and dispatches board moves', async () => {
@@ -156,7 +158,7 @@ describe('App online logic', () => {
       },
     }
 
-    renderAt('/online')
+    renderAt('/online/match')
     await user.click(await screen.findByLabelText('3行4列 置けます'))
 
     expect(await screen.findByText('接続済み / あなたは黒です')).toBeInTheDocument()
@@ -180,7 +182,7 @@ describe('App online logic', () => {
       canRequestRematch: true,
     }
 
-    renderAt('/online')
+    renderAt('/online/match')
     await user.click(await screen.findByRole('button', { name: '対戦を終了' }))
 
     expect(leaveMatch).toHaveBeenCalledTimes(1)
