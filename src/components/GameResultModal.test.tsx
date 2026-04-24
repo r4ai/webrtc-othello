@@ -1,12 +1,12 @@
-import { fireEvent, render } from '@testing-library/react'
-import { describe, expect, test, vi } from 'vitest'
-import { GameResultModal } from './GameResultModal'
+import { fireEvent, render } from "@testing-library/react";
+import { describe, expect, test, vi } from "vite-plus/test";
+import { GameResultModal } from "./GameResultModal";
 
-describe('GameResultModal', () => {
-  test('renders full-screen end state content', () => {
-    const onPrimary = vi.fn()
-    const onSecondary = vi.fn()
-    const onViewBoard = vi.fn()
+describe("GameResultModal", () => {
+  test("renders full-screen end state content", () => {
+    const onPrimary = vi.fn();
+    const onSecondary = vi.fn();
+    const onViewBoard = vi.fn();
 
     const { getByText, getByRole } = render(
       <GameResultModal
@@ -23,16 +23,16 @@ describe('GameResultModal', () => {
         onPrimary={onPrimary}
         onSecondary={onSecondary}
       />,
-    )
+    );
 
-    expect(getByRole('heading', { name: '対局終了' })).toBeInTheDocument()
-    expect(getByText('白の勝ちです。')).toBeInTheDocument()
-    expect(getByText('最終スコア')).toBeInTheDocument()
-    expect(getByText('28')).toBeInTheDocument()
-    expect(getByText('36')).toBeInTheDocument()
-    expect(getByRole('button', { name: '再戦を申し込む' })).toBeInTheDocument()
-    fireEvent.click(getByRole('button', { name: '盤面を見る' }))
-    expect(onViewBoard).toHaveBeenCalledTimes(1)
-    expect(getByRole('button', { name: '対戦を終了' })).toBeInTheDocument()
-  })
-})
+    expect(getByRole("heading", { name: "対局終了" })).toBeInTheDocument();
+    expect(getByText("白の勝ちです。")).toBeInTheDocument();
+    expect(getByText("最終スコア")).toBeInTheDocument();
+    expect(getByText("28")).toBeInTheDocument();
+    expect(getByText("36")).toBeInTheDocument();
+    expect(getByRole("button", { name: "再戦を申し込む" })).toBeInTheDocument();
+    fireEvent.click(getByRole("button", { name: "盤面を見る" }));
+    expect(onViewBoard).toHaveBeenCalledTimes(1);
+    expect(getByRole("button", { name: "対戦を終了" })).toBeInTheDocument();
+  });
+});

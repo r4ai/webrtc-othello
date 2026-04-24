@@ -1,85 +1,81 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type {
-  GameState,
-  MatchConnectionState,
-  PlayerRole,
-} from './game/types'
-import App from './App'
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, test, vi } from "vite-plus/test";
+import type { GameState, MatchConnectionState, PlayerRole } from "./game/types";
+import App from "./App";
 
 let onlineState: {
-  gameState: GameState
-  score: { black: number; white: number }
-  localRole: PlayerRole | null
-  connectionState: MatchConnectionState
-  inviteCode: string
-  errorMessage: string | null
-  isCreatingRoom: boolean
-  isJoiningRoom: boolean
-  isSubmittingAnswer: boolean
-  canInteract: boolean
-  canRequestRematch: boolean
-  localPlayerLabel: string
-  matchId: string | null
-  revision: number
-  pendingRematch: boolean
-  peerRequestedRematch: boolean
-  requiresAnswerCode: boolean
-}
+  gameState: GameState;
+  score: { black: number; white: number };
+  localRole: PlayerRole | null;
+  connectionState: MatchConnectionState;
+  inviteCode: string;
+  errorMessage: string | null;
+  isCreatingRoom: boolean;
+  isJoiningRoom: boolean;
+  isSubmittingAnswer: boolean;
+  canInteract: boolean;
+  canRequestRematch: boolean;
+  localPlayerLabel: string;
+  matchId: string | null;
+  revision: number;
+  pendingRematch: boolean;
+  peerRequestedRematch: boolean;
+  requiresAnswerCode: boolean;
+};
 
-const createRoom = vi.fn<() => Promise<void>>()
-const joinRoom = vi.fn<(inviteCode: string) => Promise<void>>()
-const submitAnswerCode = vi.fn<(inviteCode: string) => Promise<void>>()
-const submitMove = vi.fn<(move: { row: number; col: number }) => void>()
-const submitPass = vi.fn<() => void>()
-const requestRematch = vi.fn<() => void>()
-const leaveMatch = vi.fn<() => void>()
-const copyInviteCode = vi.fn<() => Promise<boolean>>()
-const writeText = vi.fn<(value: string) => Promise<void>>()
+const createRoom = vi.fn<() => Promise<void>>();
+const joinRoom = vi.fn<(inviteCode: string) => Promise<void>>();
+const submitAnswerCode = vi.fn<(inviteCode: string) => Promise<void>>();
+const submitMove = vi.fn<(move: { row: number; col: number }) => void>();
+const submitPass = vi.fn<() => void>();
+const requestRematch = vi.fn<() => void>();
+const leaveMatch = vi.fn<() => void>();
+const copyInviteCode = vi.fn<() => Promise<boolean>>();
+const writeText = vi.fn<(value: string) => Promise<void>>();
 
-vi.mock('./ui/Button', () => ({
+vi.mock("./ui/Button", () => ({
   Button: ({
     children,
     isDisabled,
     onPress,
   }: {
-    children: string
-    isDisabled?: boolean
-    onPress?: () => void
+    children: string;
+    isDisabled?: boolean;
+    onPress?: () => void;
   }) => (
     <button type="button" disabled={isDisabled} onClick={onPress}>
       {children}
     </button>
   ),
-}))
+}));
 
-vi.mock('./components/Board', () => ({
+vi.mock("./components/Board", () => ({
   Board: ({
     interactive,
     validMoves,
     onMove,
   }: {
-    interactive: boolean
-    validMoves: Array<{ row: number; col: number }>
-    onMove: (move: { row: number; col: number }) => void
+    interactive: boolean;
+    validMoves: Array<{ row: number; col: number }>;
+    onMove: (move: { row: number; col: number }) => void;
   }) => {
-    const move = validMoves[0]
+    const move = validMoves[0];
 
     return (
       <button
         type="button"
-        aria-label={move ? `${move.row + 1}行${move.col + 1}列 置けます` : '置ける手なし'}
+        aria-label={move ? `${move.row + 1}行${move.col + 1}列 置けます` : "置ける手なし"}
         disabled={!interactive || !move}
         onClick={() => move && onMove(move)}
       >
         board
       </button>
-    )
+    );
   },
-}))
+}));
 
-vi.mock('./ui/ConfirmDialog', () => ({
+vi.mock("./ui/ConfirmDialog", () => ({
   ConfirmDialog: ({
     isOpen,
     title,
@@ -88,12 +84,12 @@ vi.mock('./ui/ConfirmDialog', () => ({
     onConfirm,
     onCancel,
   }: {
-    isOpen: boolean
-    title: string
-    confirmLabel: string
-    cancelLabel: string
-    onConfirm: () => void
-    onCancel: () => void
+    isOpen: boolean;
+    title: string;
+    confirmLabel: string;
+    cancelLabel: string;
+    onConfirm: () => void;
+    onCancel: () => void;
   }) =>
     isOpen ? (
       <div>
@@ -106,9 +102,9 @@ vi.mock('./ui/ConfirmDialog', () => ({
         </button>
       </div>
     ) : null,
-}))
+}));
 
-vi.mock('./effects/useOnlineMatch', () => ({
+vi.mock("./effects/useOnlineMatch", () => ({
   useOnlineMatch: () => ({
     viewModel: onlineState,
     actions: {
@@ -122,343 +118,353 @@ vi.mock('./effects/useOnlineMatch', () => ({
       copyInviteCode,
     },
   }),
-}))
+}));
 
-function renderAt(pathname = '/') {
-  window.history.pushState({}, '', pathname)
-  return render(<App />)
+function renderAt(pathname = "/") {
+  window.history.pushState({}, "", pathname);
+  return render(<App />);
 }
 
-describe('App online logic', () => {
+describe("App online logic", () => {
   beforeEach(() => {
-    createRoom.mockReset()
-    joinRoom.mockReset()
-    submitAnswerCode.mockReset()
-    submitMove.mockReset()
-    submitPass.mockReset()
-    requestRematch.mockReset()
-    leaveMatch.mockReset()
-    copyInviteCode.mockReset()
-    writeText.mockReset()
-    copyInviteCode.mockResolvedValue(true)
-    createRoom.mockResolvedValue(undefined)
-    joinRoom.mockResolvedValue(undefined)
-    submitAnswerCode.mockResolvedValue(undefined)
+    createRoom.mockReset();
+    joinRoom.mockReset();
+    submitAnswerCode.mockReset();
+    submitMove.mockReset();
+    submitPass.mockReset();
+    requestRematch.mockReset();
+    leaveMatch.mockReset();
+    copyInviteCode.mockReset();
+    writeText.mockReset();
+    copyInviteCode.mockResolvedValue(true);
+    createRoom.mockResolvedValue(undefined);
+    joinRoom.mockResolvedValue(undefined);
+    submitAnswerCode.mockResolvedValue(undefined);
     leaveMatch.mockImplementation(() => {
       onlineState = {
         ...onlineState,
-        connectionState: 'disconnected',
+        connectionState: "disconnected",
         requiresAnswerCode: false,
-      }
-    })
-    Object.defineProperty(navigator, 'clipboard', {
+      };
+    });
+    Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: {
         writeText,
       },
-    })
-    writeText.mockResolvedValue(undefined)
+    });
+    writeText.mockResolvedValue(undefined);
     onlineState = {
       gameState: {
         board: [] as never[],
-        currentPlayer: 'black',
+        currentPlayer: "black",
         validMoves: [],
         consecutivePasses: 0,
-        status: 'playing',
+        status: "playing",
         winner: null,
       },
       score: { black: 2, white: 2 },
-      localRole: 'host',
-      connectionState: 'code-ready',
-      inviteCode: 'invite-code',
+      localRole: "host",
+      connectionState: "code-ready",
+      inviteCode: "invite-code",
       errorMessage: null,
       isCreatingRoom: false,
       isJoiningRoom: false,
       isSubmittingAnswer: false,
       canInteract: false,
       canRequestRematch: false,
-      localPlayerLabel: '黒',
-      matchId: 'match-1',
+      localPlayerLabel: "黒",
+      matchId: "match-1",
       revision: 0,
       pendingRematch: false,
       peerRequestedRematch: false,
       requiresAnswerCode: true,
-    }
-  })
+    };
+  });
 
-  test('shows host create flow with invite code and answer code input', async () => {
-    renderAt('/online/create')
+  test("shows host create flow with invite code and answer code input", async () => {
+    renderAt("/online/create");
 
-    expect(await screen.findByText('部屋を作る')).toBeInTheDocument()
-    expect(await screen.findByDisplayValue('invite-code')).toBeInTheDocument()
-    expect(await screen.findByLabelText('相手の応答コード')).toBeInTheDocument()
-  })
+    expect(await screen.findByText("部屋を作る")).toBeInTheDocument();
+    expect(await screen.findByDisplayValue("invite-code")).toBeInTheDocument();
+    expect(await screen.findByLabelText("相手の応答コード")).toBeInTheDocument();
+  });
 
-  test('shows the host retry state after disconnection and lets the user recreate the room', async () => {
-    const user = userEvent.setup()
+  test("shows the host retry state after disconnection and lets the user recreate the room", async () => {
+    const user = userEvent.setup();
     onlineState = {
       ...onlineState,
-      connectionState: 'disconnected',
-      errorMessage: '接続が切れました。',
-    }
+      connectionState: "disconnected",
+      errorMessage: "接続が切れました。",
+    };
 
-    renderAt('/online/create')
+    renderAt("/online/create");
 
-    expect(await screen.findByText('接続が切れたため、部屋を作り直してください。')).toBeInTheDocument()
-    expect(screen.queryByLabelText('相手の応答コード')).not.toBeInTheDocument()
+    expect(
+      await screen.findByText("接続が切れたため、部屋を作り直してください。"),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("相手の応答コード")).not.toBeInTheDocument();
 
-    await user.click(await screen.findByRole('button', { name: '部屋を作り直す' }))
-    expect(createRoom).toHaveBeenCalledTimes(2)
-  })
+    await user.click(await screen.findByRole("button", { name: "部屋を作り直す" }));
+    expect(createRoom).toHaveBeenCalledTimes(2);
+  });
 
-  test('keeps the answer-code input visible while the host submission is still in flight', async () => {
+  test("keeps the answer-code input visible while the host submission is still in flight", async () => {
     onlineState = {
       ...onlineState,
       isSubmittingAnswer: true,
-    }
+    };
 
-    renderAt('/online/create')
+    renderAt("/online/create");
 
-    expect(await screen.findByLabelText('相手の応答コード')).toBeInTheDocument()
-    expect(await screen.findByRole('button', { name: '接続を開始中...' })).toBeDisabled()
-    expect(screen.queryByText('接続を確立しています。画面はそのままでお待ちください。')).not.toBeInTheDocument()
-  })
+    expect(await screen.findByLabelText("相手の応答コード")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "接続を開始中..." })).toBeDisabled();
+    expect(
+      screen.queryByText("接続を確立しています。画面はそのままでお待ちください。"),
+    ).not.toBeInTheDocument();
+  });
 
-  test('copies the host invite artifacts and submits the answer code', async () => {
-    const user = userEvent.setup()
+  test("copies the host invite artifacts and submits the answer code", async () => {
+    const user = userEvent.setup();
 
-    renderAt('/online/create')
+    renderAt("/online/create");
 
-    await user.click(await screen.findByRole('button', { name: '招待コードをコピー' }))
-    expect(copyInviteCode).toHaveBeenCalledTimes(1)
-    expect(await screen.findByRole('button', { name: '招待コードをコピー済み ✓' })).toBeInTheDocument()
+    await user.click(await screen.findByRole("button", { name: "招待コードをコピー" }));
+    expect(copyInviteCode).toHaveBeenCalledTimes(1);
+    expect(
+      await screen.findByRole("button", { name: "招待コードをコピー済み ✓" }),
+    ).toBeInTheDocument();
 
-    await user.click(await screen.findByRole('button', { name: '招待リンクをコピー' }))
-    expect(await screen.findByRole('button', { name: '招待リンクをコピー済み ✓' })).toBeInTheDocument()
+    await user.click(await screen.findByRole("button", { name: "招待リンクをコピー" }));
+    expect(
+      await screen.findByRole("button", { name: "招待リンクをコピー済み ✓" }),
+    ).toBeInTheDocument();
 
-    fireEvent.change(await screen.findByLabelText('相手の応答コード'), {
-      target: { value: 'guest-answer' },
-    })
-    await user.click(await screen.findByRole('button', { name: '接続開始' }))
+    fireEvent.change(await screen.findByLabelText("相手の応答コード"), {
+      target: { value: "guest-answer" },
+    });
+    await user.click(await screen.findByRole("button", { name: "接続開始" }));
 
-    expect(submitAnswerCode).toHaveBeenCalledWith('guest-answer')
-  })
+    expect(submitAnswerCode).toHaveBeenCalledWith("guest-answer");
+  });
 
-  test('keeps the host on answer-code input even if peer state becomes connecting before answer acceptance', async () => {
+  test("keeps the host on answer-code input even if peer state becomes connecting before answer acceptance", async () => {
     onlineState = {
       ...onlineState,
-      connectionState: 'connecting',
+      connectionState: "connecting",
       requiresAnswerCode: true,
-    }
+    };
 
-    renderAt('/online/create')
+    renderAt("/online/create");
 
-    expect(await screen.findByLabelText('相手の応答コード')).toBeInTheDocument()
-    expect(screen.queryByText('接続を確立しています。画面はそのままでお待ちください。')).not.toBeInTheDocument()
-  })
+    expect(await screen.findByLabelText("相手の応答コード")).toBeInTheDocument();
+    expect(
+      screen.queryByText("接続を確立しています。画面はそのままでお待ちください。"),
+    ).not.toBeInTheDocument();
+  });
 
-  test('disables the host retry button while room recreation is in flight', async () => {
+  test("disables the host retry button while room recreation is in flight", async () => {
     onlineState = {
       ...onlineState,
-      connectionState: 'disconnected',
-      errorMessage: '接続が切れました。',
+      connectionState: "disconnected",
+      errorMessage: "接続が切れました。",
       isCreatingRoom: true,
-    }
+    };
 
-    renderAt('/online/create')
+    renderAt("/online/create");
 
-    expect(await screen.findByRole('button', { name: '部屋を作り直し中...' })).toBeDisabled()
-  })
+    expect(await screen.findByRole("button", { name: "部屋を作り直し中..." })).toBeDisabled();
+  });
 
-  test('forwards join code input to joinRoom', async () => {
-    const user = userEvent.setup()
+  test("forwards join code input to joinRoom", async () => {
+    const user = userEvent.setup();
     onlineState = {
       ...onlineState,
       localRole: null,
-      connectionState: 'idle',
-      inviteCode: '',
+      connectionState: "idle",
+      inviteCode: "",
       requiresAnswerCode: false,
-    }
+    };
 
-    renderAt('/online')
-    await user.click(await screen.findByRole('button', { name: '招待コードで参加' }))
-    fireEvent.change(await screen.findByLabelText('招待コード'), {
-      target: { value: 'host-offer' },
-    })
-    await user.click(await screen.findByRole('button', { name: '応答コードを生成' }))
+    renderAt("/online");
+    await user.click(await screen.findByRole("button", { name: "招待コードで参加" }));
+    fireEvent.change(await screen.findByLabelText("招待コード"), {
+      target: { value: "host-offer" },
+    });
+    await user.click(await screen.findByRole("button", { name: "応答コードを生成" }));
 
     await waitFor(() => {
-      expect(joinRoom).toHaveBeenCalledWith('host-offer')
-    })
-  })
+      expect(joinRoom).toHaveBeenCalledWith("host-offer");
+    });
+  });
 
-  test('shows guest response code after joining with an invite code', async () => {
+  test("shows guest response code after joining with an invite code", async () => {
     onlineState = {
       ...onlineState,
-      localRole: 'guest',
-      connectionState: 'code-ready',
+      localRole: "guest",
+      connectionState: "code-ready",
       requiresAnswerCode: false,
-    }
+    };
 
-    renderAt('/online/join')
+    renderAt("/online/join");
 
-    expect(await screen.findByText('応答コードをホストに送る')).toBeInTheDocument()
-    expect(await screen.findByDisplayValue('invite-code')).toBeInTheDocument()
-  })
+    expect(await screen.findByText("応答コードをホストに送る")).toBeInTheDocument();
+    expect(await screen.findByDisplayValue("invite-code")).toBeInTheDocument();
+  });
 
-  test('prefills the guest join code from the URL', async () => {
+  test("prefills the guest join code from the URL", async () => {
     onlineState = {
       ...onlineState,
       localRole: null,
-      connectionState: 'idle',
-      inviteCode: '',
+      connectionState: "idle",
+      inviteCode: "",
       requiresAnswerCode: false,
-    }
+    };
 
-    renderAt('/online/join?i=host-prefill')
+    renderAt("/online/join?i=host-prefill");
 
-    expect(await screen.findByLabelText('招待コード')).toHaveValue('host-prefill')
-  })
+    expect(await screen.findByLabelText("招待コード")).toHaveValue("host-prefill");
+  });
 
-  test('copies the guest response code', async () => {
-    const user = userEvent.setup()
+  test("copies the guest response code", async () => {
+    const user = userEvent.setup();
     onlineState = {
       ...onlineState,
-      localRole: 'guest',
-      connectionState: 'code-ready',
+      localRole: "guest",
+      connectionState: "code-ready",
       requiresAnswerCode: false,
-    }
+    };
 
-    renderAt('/online/join')
-    await user.click(await screen.findByRole('button', { name: '応答コードをコピー' }))
+    renderAt("/online/join");
+    await user.click(await screen.findByRole("button", { name: "応答コードをコピー" }));
 
-    expect(copyInviteCode).toHaveBeenCalledTimes(1)
-    expect(await screen.findByRole('button', { name: 'コピー済み ✓' })).toBeInTheDocument()
-  })
+    expect(copyInviteCode).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole("button", { name: "コピー済み ✓" })).toBeInTheDocument();
+  });
 
-  test('keeps the guest on invite input while join is still in flight', async () => {
+  test("keeps the guest on invite input while join is still in flight", async () => {
     onlineState = {
       ...onlineState,
       localRole: null,
-      connectionState: 'idle',
-      inviteCode: '',
+      connectionState: "idle",
+      inviteCode: "",
       requiresAnswerCode: false,
       isJoiningRoom: true,
-    }
+    };
 
-    renderAt('/online/join')
+    renderAt("/online/join");
 
-    expect(await screen.findByLabelText('招待コード')).toBeInTheDocument()
-    expect(await screen.findByRole('button', { name: '応答コードを作成中...' })).toBeDisabled()
-    expect(screen.queryByText('応答コードをホストに送る')).toBeInTheDocument()
-    expect(screen.queryByDisplayValue('invite-code')).not.toBeInTheDocument()
-  })
+    expect(await screen.findByLabelText("招待コード")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "応答コードを作成中..." })).toBeDisabled();
+    expect(screen.queryByText("応答コードをホストに送る")).toBeInTheDocument();
+    expect(screen.queryByDisplayValue("invite-code")).not.toBeInTheDocument();
+  });
 
-  test('shows invite input again when the guest flow is disconnected', async () => {
+  test("shows invite input again when the guest flow is disconnected", async () => {
     onlineState = {
       ...onlineState,
-      localRole: 'guest',
-      connectionState: 'disconnected',
+      localRole: "guest",
+      connectionState: "disconnected",
       requiresAnswerCode: false,
-      errorMessage: '接続が切れました。',
-    }
+      errorMessage: "接続が切れました。",
+    };
 
-    renderAt('/online/join')
+    renderAt("/online/join");
 
-    expect(await screen.findByLabelText('招待コード')).toBeInTheDocument()
-    expect(screen.queryByDisplayValue('invite-code')).not.toBeInTheDocument()
-  })
+    expect(await screen.findByLabelText("招待コード")).toBeInTheDocument();
+    expect(screen.queryByDisplayValue("invite-code")).not.toBeInTheDocument();
+  });
 
-  test('shows online match screen when connected and dispatches board moves', async () => {
-    const user = userEvent.setup()
+  test("shows online match screen when connected and dispatches board moves", async () => {
+    const user = userEvent.setup();
     onlineState = {
       ...onlineState,
-      connectionState: 'connected',
+      connectionState: "connected",
       canInteract: true,
       requiresAnswerCode: false,
       gameState: {
         board: Array.from({ length: 8 }, () => Array(8).fill(null)),
-        currentPlayer: 'black',
+        currentPlayer: "black",
         validMoves: [{ row: 2, col: 3 }],
         consecutivePasses: 0,
-        status: 'playing',
+        status: "playing",
         winner: null,
       },
-    }
+    };
 
-    renderAt('/online/match')
-    await user.click(await screen.findByLabelText('3行4列 置けます'))
+    renderAt("/online/match");
+    await user.click(await screen.findByLabelText("3行4列 置けます"));
 
-    expect(await screen.findByText('接続済み / あなたは黒です')).toBeInTheDocument()
-    expect(submitMove).toHaveBeenCalledWith({ row: 2, col: 3 })
-  })
+    expect(await screen.findByText("接続済み / あなたは黒です")).toBeInTheDocument();
+    expect(submitMove).toHaveBeenCalledWith({ row: 2, col: 3 });
+  });
 
-  test('redirects the match route back to the online lobby when the initial state is not connected', async () => {
+  test("redirects the match route back to the online lobby when the initial state is not connected", async () => {
     onlineState = {
       ...onlineState,
-      connectionState: 'connecting',
+      connectionState: "connecting",
       requiresAnswerCode: false,
-    }
+    };
 
-    renderAt('/online/match')
+    renderAt("/online/match");
 
-    expect(await screen.findByRole('button', { name: '招待コードで参加' })).toBeInTheDocument()
-  })
+    expect(await screen.findByRole("button", { name: "招待コードで参加" })).toBeInTheDocument();
+  });
 
-  test('shows pass and rematch controls for the relevant online states', async () => {
-    const user = userEvent.setup()
+  test("shows pass and rematch controls for the relevant online states", async () => {
+    const user = userEvent.setup();
     onlineState = {
       ...onlineState,
-      connectionState: 'connected',
+      connectionState: "connected",
       requiresAnswerCode: false,
       canInteract: true,
       canRequestRematch: true,
       peerRequestedRematch: true,
       gameState: {
         board: Array.from({ length: 8 }, () => Array(8).fill(null)),
-        currentPlayer: 'black',
+        currentPlayer: "black",
         validMoves: [],
         consecutivePasses: 0,
-        status: 'playing',
+        status: "playing",
         winner: null,
       },
-    }
+    };
 
-    renderAt('/online/match')
+    renderAt("/online/match");
 
     expect(
-      await screen.findByText('相手が再戦を希望しています。再戦を承認できます。'),
-    ).toBeInTheDocument()
-    await user.click(await screen.findByRole('button', { name: 'パス' }))
-    await user.click(await screen.findByRole('button', { name: '再戦を承認' }))
+      await screen.findByText("相手が再戦を希望しています。再戦を承認できます。"),
+    ).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "パス" }));
+    await user.click(await screen.findByRole("button", { name: "再戦を承認" }));
 
-    expect(submitPass).toHaveBeenCalledTimes(1)
-    expect(requestRematch).toHaveBeenCalledTimes(1)
-  })
+    expect(submitPass).toHaveBeenCalledTimes(1);
+    expect(requestRematch).toHaveBeenCalledTimes(1);
+  });
 
-  test('returns to home when online disconnect action is used', async () => {
-    const user = userEvent.setup()
+  test("returns to home when online disconnect action is used", async () => {
+    const user = userEvent.setup();
     onlineState = {
       ...onlineState,
-      connectionState: 'connected',
+      connectionState: "connected",
       requiresAnswerCode: false,
       gameState: {
         board: Array.from({ length: 8 }, () => Array(8).fill(null)),
-        currentPlayer: 'white',
+        currentPlayer: "white",
         validMoves: [],
         consecutivePasses: 0,
-        status: 'finished',
-        winner: 'white',
+        status: "finished",
+        winner: "white",
       },
       canRequestRematch: true,
-    }
+    };
 
-    renderAt('/online/match')
-    await user.click(await screen.findByRole('button', { name: '対戦を終了' }))
-    await user.click(await screen.findByRole('button', { name: '終了する' }))
+    renderAt("/online/match");
+    await user.click(await screen.findByRole("button", { name: "対戦を終了" }));
+    await user.click(await screen.findByRole("button", { name: "終了する" }));
 
-    expect(leaveMatch).toHaveBeenCalledTimes(1)
-    expect(window.location.pathname).toBe('/')
-    expect(await screen.findByRole('button', { name: 'オンライン対戦' })).toBeInTheDocument()
-  })
-})
+    expect(leaveMatch).toHaveBeenCalledTimes(1);
+    expect(window.location.pathname).toBe("/");
+    expect(await screen.findByRole("button", { name: "オンライン対戦" })).toBeInTheDocument();
+  });
+});

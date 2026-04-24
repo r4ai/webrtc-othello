@@ -1,12 +1,12 @@
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, expect, test, vi } from 'vitest'
-import { ConfirmDialog } from './ConfirmDialog'
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, test, vi } from "vite-plus/test";
+import { ConfirmDialog } from "./ConfirmDialog";
 
-describe('ConfirmDialog', () => {
-  test('calls onConfirm from the confirm button', async () => {
-    const user = userEvent.setup()
-    const onConfirm = vi.fn()
+describe("ConfirmDialog", () => {
+  test("calls onConfirm from the confirm button", async () => {
+    const user = userEvent.setup();
+    const onConfirm = vi.fn();
 
     render(
       <ConfirmDialog
@@ -17,17 +17,17 @@ describe('ConfirmDialog', () => {
         onConfirm={onConfirm}
         onCancel={() => {}}
       />,
-    )
+    );
 
-    expect(screen.queryByText('説明文')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'はい' }))
+    expect(screen.queryByText("説明文")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "はい" }));
 
-    expect(onConfirm).toHaveBeenCalledTimes(1)
-  })
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
 
-  test('calls onCancel from the cancel button', async () => {
-    const user = userEvent.setup()
-    const onCancel = vi.fn()
+  test("calls onCancel from the cancel button", async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
 
     render(
       <ConfirmDialog
@@ -39,10 +39,10 @@ describe('ConfirmDialog', () => {
         onConfirm={() => {}}
         onCancel={onCancel}
       />,
-    )
+    );
 
-    await user.click(screen.getByRole('button', { name: 'いいえ' }))
+    await user.click(screen.getByRole("button", { name: "いいえ" }));
 
-    expect(onCancel).toHaveBeenCalled()
-  })
-})
+    expect(onCancel).toHaveBeenCalled();
+  });
+});
