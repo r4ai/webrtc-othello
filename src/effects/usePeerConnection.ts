@@ -1,253 +1,249 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { MatchConnectionState, PlayerRole } from '../game/types'
-import {
-  decodeInvitePayload,
-  encodeInvitePayload,
-  type PeerEnvelope,
-} from './peerProtocol'
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { MatchConnectionState, PlayerRole } from "../game/types";
+import { decodeInvitePayload, encodeInvitePayload, type PeerEnvelope } from "./peerProtocol";
 
 interface UsePeerConnectionOptions {
-  onEnvelope: (envelope: PeerEnvelope) => void
-  onConnectionLost?: () => void
+  onEnvelope: (envelope: PeerEnvelope) => void;
+  onConnectionLost?: () => void;
 }
 
 export interface UsePeerConnectionResult {
-  localRole: PlayerRole | null
-  connectionState: MatchConnectionState
-  inviteCode: string
-  errorMessage: string | null
-  createRoom: () => Promise<void>
-  joinRoom: (inviteCode: string) => Promise<void>
-  acceptGuestAnswer: (inviteCode: string) => Promise<void>
-  sendEnvelope: (envelope: PeerEnvelope) => boolean
-  leaveConnection: () => void
+  localRole: PlayerRole | null;
+  connectionState: MatchConnectionState;
+  inviteCode: string;
+  errorMessage: string | null;
+  createRoom: () => Promise<void>;
+  joinRoom: (inviteCode: string) => Promise<void>;
+  acceptGuestAnswer: (inviteCode: string) => Promise<void>;
+  sendEnvelope: (envelope: PeerEnvelope) => boolean;
+  leaveConnection: () => void;
 }
 
 const rtcConfig: RTCConfiguration = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-}
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+};
 
 function waitForIceGatheringComplete(connection: RTCPeerConnection): Promise<void> {
-  if (connection.iceGatheringState === 'complete') {
-    return Promise.resolve()
+  if (connection.iceGatheringState === "complete") {
+    return Promise.resolve();
   }
 
   return new Promise((resolve) => {
     const handleStateChange = () => {
-      if (connection.iceGatheringState === 'complete') {
-        connection.removeEventListener('icegatheringstatechange', handleStateChange)
-        resolve()
+      if (connection.iceGatheringState === "complete") {
+        connection.removeEventListener("icegatheringstatechange", handleStateChange);
+        resolve();
       }
-    }
+    };
 
-    connection.addEventListener('icegatheringstatechange', handleStateChange)
-  })
+    connection.addEventListener("icegatheringstatechange", handleStateChange);
+  });
 }
 
 function normalizeConnectionState(state: RTCPeerConnectionState): MatchConnectionState | null {
-  if (state === 'connected') {
-    return 'connected'
+  if (state === "connected") {
+    return "connected";
   }
 
-  if (state === 'connecting') {
-    return 'connecting'
+  if (state === "connecting") {
+    return "connecting";
   }
 
-  if (state === 'disconnected' || state === 'closed') {
-    return 'disconnected'
+  if (state === "disconnected" || state === "closed") {
+    return "disconnected";
   }
 
-  if (state === 'failed') {
-    return 'failed'
+  if (state === "failed") {
+    return "failed";
   }
 
-  return null
+  return null;
 }
 
 export function usePeerConnection({
   onEnvelope,
   onConnectionLost,
 }: UsePeerConnectionOptions): UsePeerConnectionResult {
-  const peerRef = useRef<RTCPeerConnection | null>(null)
-  const channelRef = useRef<RTCDataChannel | null>(null)
-  const roleRef = useRef<PlayerRole | null>(null)
-  const onEnvelopeRef = useRef(onEnvelope)
-  const onConnectionLostRef = useRef(onConnectionLost)
-  const [localRole, setLocalRole] = useState<PlayerRole | null>(null)
-  const [connectionState, setConnectionState] = useState<MatchConnectionState>('idle')
-  const [inviteCode, setInviteCode] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const peerRef = useRef<RTCPeerConnection | null>(null);
+  const channelRef = useRef<RTCDataChannel | null>(null);
+  const roleRef = useRef<PlayerRole | null>(null);
+  const onEnvelopeRef = useRef(onEnvelope);
+  const onConnectionLostRef = useRef(onConnectionLost);
+  const [localRole, setLocalRole] = useState<PlayerRole | null>(null);
+  const [connectionState, setConnectionState] = useState<MatchConnectionState>("idle");
+  const [inviteCode, setInviteCode] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    onEnvelopeRef.current = onEnvelope
-  }, [onEnvelope])
+    onEnvelopeRef.current = onEnvelope;
+  }, [onEnvelope]);
 
   useEffect(() => {
-    onConnectionLostRef.current = onConnectionLost
-  }, [onConnectionLost])
+    onConnectionLostRef.current = onConnectionLost;
+  }, [onConnectionLost]);
 
   const cleanupConnection = useCallback(() => {
-    channelRef.current?.close()
-    channelRef.current = null
-    peerRef.current?.close()
-    peerRef.current = null
-    roleRef.current = null
-  }, [])
+    channelRef.current?.close();
+    channelRef.current = null;
+    peerRef.current?.close();
+    peerRef.current = null;
+    roleRef.current = null;
+  }, []);
 
   const leaveConnection = useCallback(() => {
-    cleanupConnection()
-    setLocalRole(null)
-    setInviteCode('')
-    setErrorMessage(null)
-    setConnectionState('idle')
-  }, [cleanupConnection])
+    cleanupConnection();
+    setLocalRole(null);
+    setInviteCode("");
+    setErrorMessage(null);
+    setConnectionState("idle");
+  }, [cleanupConnection]);
 
   const attachChannel = useCallback((channel: RTCDataChannel) => {
-    channelRef.current = channel
+    channelRef.current = channel;
 
-    channel.addEventListener('open', () => {
-      setErrorMessage(null)
-      setConnectionState('connected')
-    })
+    channel.addEventListener("open", () => {
+      setErrorMessage(null);
+      setConnectionState("connected");
+    });
 
-    channel.addEventListener('close', () => {
-      setConnectionState('disconnected')
-      onConnectionLostRef.current?.()
-    })
+    channel.addEventListener("close", () => {
+      setConnectionState("disconnected");
+      onConnectionLostRef.current?.();
+    });
 
-    channel.addEventListener('message', (event) => {
+    channel.addEventListener("message", (event) => {
       try {
-        const envelope = JSON.parse(event.data) as PeerEnvelope
-        onEnvelopeRef.current(envelope)
+        const envelope = JSON.parse(event.data) as PeerEnvelope;
+        onEnvelopeRef.current(envelope);
       } catch {
-        setErrorMessage('受信データを解釈できませんでした。')
+        setErrorMessage("受信データを解釈できませんでした。");
       }
-    })
-  }, [])
+    });
+  }, []);
 
   const attachPeer = useCallback(
     (connection: RTCPeerConnection, role: PlayerRole) => {
-      peerRef.current = connection
-      roleRef.current = role
-      setLocalRole(role)
-      setErrorMessage(null)
+      peerRef.current = connection;
+      roleRef.current = role;
+      setLocalRole(role);
+      setErrorMessage(null);
 
-      connection.addEventListener('connectionstatechange', () => {
-        const nextState = normalizeConnectionState(connection.connectionState)
+      connection.addEventListener("connectionstatechange", () => {
+        const nextState = normalizeConnectionState(connection.connectionState);
         if (nextState === null) {
-          return
+          return;
         }
 
-        setConnectionState(nextState)
+        setConnectionState(nextState);
 
-        if (nextState === 'failed') {
-          setErrorMessage('接続に失敗しました。')
+        if (nextState === "failed") {
+          setErrorMessage("接続に失敗しました。");
         }
 
-        if (nextState === 'disconnected') {
-          onConnectionLostRef.current?.()
+        if (nextState === "disconnected") {
+          onConnectionLostRef.current?.();
         }
-      })
+      });
 
-      connection.addEventListener('datachannel', (event) => {
-        attachChannel(event.channel)
-      })
+      connection.addEventListener("datachannel", (event) => {
+        attachChannel(event.channel);
+      });
     },
     [attachChannel],
-  )
+  );
 
   const createRoom = useCallback(async () => {
-    cleanupConnection()
+    cleanupConnection();
 
-    const connection = new RTCPeerConnection(rtcConfig)
-    attachPeer(connection, 'host')
+    const connection = new RTCPeerConnection(rtcConfig);
+    attachPeer(connection, "host");
 
-    const channel = connection.createDataChannel('othello-match', { ordered: true })
-    attachChannel(channel)
+    const channel = connection.createDataChannel("othello-match", { ordered: true });
+    attachChannel(channel);
 
-    const offer = await connection.createOffer()
-    await connection.setLocalDescription(offer)
-    await waitForIceGatheringComplete(connection)
+    const offer = await connection.createOffer();
+    await connection.setLocalDescription(offer);
+    await waitForIceGatheringComplete(connection);
 
     if (connection.localDescription === null) {
-      throw new Error('招待コードを生成できませんでした。')
+      throw new Error("招待コードを生成できませんでした。");
     }
 
     setInviteCode(
       encodeInvitePayload({
         version: 1,
-        role: 'host-offer',
+        role: "host-offer",
         sdp: JSON.stringify(connection.localDescription),
       }),
-    )
-    setConnectionState('code-ready')
-  }, [attachChannel, attachPeer, cleanupConnection])
+    );
+    setConnectionState("code-ready");
+  }, [attachChannel, attachPeer, cleanupConnection]);
 
   const joinRoom = useCallback(
     async (rawInviteCode: string) => {
-      cleanupConnection()
+      cleanupConnection();
 
-      const invite = decodeInvitePayload(rawInviteCode)
-      if (invite.role !== 'host-offer') {
-        throw new Error('ホストの招待コードを入力してください。')
+      const invite = decodeInvitePayload(rawInviteCode);
+      if (invite.role !== "host-offer") {
+        throw new Error("ホストの招待コードを入力してください。");
       }
 
-      const connection = new RTCPeerConnection(rtcConfig)
-      attachPeer(connection, 'guest')
-      await connection.setRemoteDescription(JSON.parse(invite.sdp) as RTCSessionDescriptionInit)
+      const connection = new RTCPeerConnection(rtcConfig);
+      attachPeer(connection, "guest");
+      await connection.setRemoteDescription(JSON.parse(invite.sdp) as RTCSessionDescriptionInit);
 
-      const answer = await connection.createAnswer()
-      await connection.setLocalDescription(answer)
-      await waitForIceGatheringComplete(connection)
+      const answer = await connection.createAnswer();
+      await connection.setLocalDescription(answer);
+      await waitForIceGatheringComplete(connection);
 
       if (connection.localDescription === null) {
-        throw new Error('応答コードを生成できませんでした。')
+        throw new Error("応答コードを生成できませんでした。");
       }
 
       setInviteCode(
         encodeInvitePayload({
           version: 1,
-          role: 'guest-answer',
+          role: "guest-answer",
           sdp: JSON.stringify(connection.localDescription),
         }),
-      )
-      setConnectionState('code-ready')
+      );
+      setConnectionState("code-ready");
     },
     [attachPeer, cleanupConnection],
-  )
+  );
 
   const acceptGuestAnswer = useCallback(async (rawInviteCode: string) => {
-    const connection = peerRef.current
-    if (connection === null || roleRef.current !== 'host') {
-      throw new Error('部屋作成後に参加コードを貼り付けてください。')
+    const connection = peerRef.current;
+    if (connection === null || roleRef.current !== "host") {
+      throw new Error("部屋作成後に参加コードを貼り付けてください。");
     }
 
-    const invite = decodeInvitePayload(rawInviteCode)
-    if (invite.role !== 'guest-answer') {
-      throw new Error('参加者の応答コードを入力してください。')
+    const invite = decodeInvitePayload(rawInviteCode);
+    if (invite.role !== "guest-answer") {
+      throw new Error("参加者の応答コードを入力してください。");
     }
 
-    await connection.setRemoteDescription(JSON.parse(invite.sdp) as RTCSessionDescriptionInit)
-    setConnectionState('connecting')
-    setErrorMessage(null)
-  }, [])
+    await connection.setRemoteDescription(JSON.parse(invite.sdp) as RTCSessionDescriptionInit);
+    setConnectionState("connecting");
+    setErrorMessage(null);
+  }, []);
 
   const sendEnvelope = useCallback((envelope: PeerEnvelope) => {
-    const channel = channelRef.current
-    if (channel === null || channel.readyState !== 'open') {
-      setErrorMessage('接続が確立していません。')
-      return false
+    const channel = channelRef.current;
+    if (channel === null || channel.readyState !== "open") {
+      setErrorMessage("接続が確立していません。");
+      return false;
     }
 
-    channel.send(JSON.stringify(envelope))
-    return true
-  }, [])
+    channel.send(JSON.stringify(envelope));
+    return true;
+  }, []);
 
   useEffect(() => {
     return () => {
-      cleanupConnection()
-    }
-  }, [cleanupConnection])
+      cleanupConnection();
+    };
+  }, [cleanupConnection]);
 
   return {
     localRole,
@@ -259,5 +255,5 @@ export function usePeerConnection({
     acceptGuestAnswer,
     sendEnvelope,
     leaveConnection,
-  }
+  };
 }

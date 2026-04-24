@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import { Button } from '../ui/Button'
-import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { useState } from "react";
+import { Button } from "../ui/Button";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 interface OnlineControlsProps {
-  message: string
-  canPass: boolean
-  canRequestRematch: boolean
-  pendingRematch: boolean
-  peerRequestedRematch: boolean
-  onPass: () => void
-  onRematch: () => void
-  onLeave: () => void
+  message: string;
+  canPass: boolean;
+  canRequestRematch: boolean;
+  pendingRematch: boolean;
+  peerRequestedRematch: boolean;
+  onPass: () => void;
+  onRematch: () => void;
+  onLeave: () => void;
 }
 
 export function OnlineControls({
@@ -23,13 +23,13 @@ export function OnlineControls({
   onRematch,
   onLeave,
 }: OnlineControlsProps) {
-  const [confirmingLeave, setConfirmingLeave] = useState(false)
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   const rematchLabel = peerRequestedRematch
-    ? '再戦を承認'
+    ? "再戦を承認"
     : pendingRematch
-      ? '再戦を申請中'
-      : '再戦'
+      ? "再戦を申請中"
+      : "再戦";
 
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-white/20 bg-white/10 p-4">
@@ -65,5 +65,5 @@ export function OnlineControls({
         onCancel={() => setConfirmingLeave(false)}
       />
     </section>
-  )
+  );
 }

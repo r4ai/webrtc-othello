@@ -1,4 +1,4 @@
-import { createContext } from 'react'
-import type { OnlineMatchValue } from './OnlineMatchContext'
+import { createContext } from "react";
+import type { OnlineMatchValue } from "./OnlineMatchContext";
 
-export const OnlineMatchContext = createContext<OnlineMatchValue | null>(null)
+export const OnlineMatchContext = createContext<OnlineMatchValue | null>(null);

@@ -1,114 +1,113 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useEffect, useState } from 'react'
-import { Board } from '../components/Board'
-import { GameResultModal } from '../components/GameResultModal'
-import { GameStatus } from '../components/GameStatus'
-import { ScoreBoard } from '../components/ScoreBoard'
-import { useAI } from '../effects/useAI'
-import { useGame } from '../effects/useGame'
-import { useNavigate } from '@tanstack/react-router'
-import { Button } from '../ui/Button'
-import { ConfirmDialog } from '../ui/ConfirmDialog'
-import { Toggle } from '../ui/Toggle'
-import type { Move, Player, Winner } from '../game/types'
+import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
+import { Board } from "../components/Board";
+import { GameResultModal } from "../components/GameResultModal";
+import { GameStatus } from "../components/GameStatus";
+import { ScoreBoard } from "../components/ScoreBoard";
+import { useAI } from "../effects/useAI";
+import { useGame } from "../effects/useGame";
+import { useNavigate } from "@tanstack/react-router";
+import { Button } from "../ui/Button";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { Toggle } from "../ui/Toggle";
+import type { Move, Player, Winner } from "../game/types";
 
 function playerLabel(player: Player): string {
-  return player === 'black' ? '黒' : '白'
+  return player === "black" ? "黒" : "白";
 }
 
 function winnerText(winner: Winner): string {
-  return winner === 'draw' ? '引き分けです。' : `${playerLabel(winner)}の勝ちです。`
+  return winner === "draw" ? "引き分けです。" : `${playerLabel(winner)}の勝ちです。`;
 }
 
 function SoloRoute() {
-  const { state, score, playMove, passTurn, resetGame } = useGame()
-  const navigate = useNavigate()
-  const [aiEnabled, setAiEnabled] = useState(true)
-  const [confirmingReset, setConfirmingReset] = useState(false)
-  const [showResultModal, setShowResultModal] = useState(false)
+  const { state, score, playMove, passTurn, resetGame } = useGame();
+  const navigate = useNavigate();
+  const [aiEnabled, setAiEnabled] = useState(true);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   useEffect(() => {
-    if (state.status === 'finished') {
-      setShowResultModal(true)
+    if (state.status === "finished") {
+      setShowResultModal(true);
     }
-  }, [state.status])
+  }, [state.status]);
 
   const handleResetPress = () => {
-    if (state.status === 'playing') {
-      setConfirmingReset(true)
+    if (state.status === "playing") {
+      setConfirmingReset(true);
     } else {
-      resetGame()
+      resetGame();
     }
-  }
+  };
 
   const handleConfirmReset = () => {
-    setConfirmingReset(false)
-    setShowResultModal(false)
-    resetGame()
-  }
+    setConfirmingReset(false);
+    setShowResultModal(false);
+    resetGame();
+  };
 
   const handleStartOver = () => {
-    setShowResultModal(false)
-    resetGame()
-  }
+    setShowResultModal(false);
+    resetGame();
+  };
 
-  const isAiTurn =
-    aiEnabled && state.status === 'playing' && state.currentPlayer === 'white'
+  const isAiTurn = aiEnabled && state.status === "playing" && state.currentPlayer === "white";
 
   const handleMove = useCallback(
     (move: Move) => {
       if (!isAiTurn) {
-        playMove(move)
+        playMove(move);
       }
     },
     [isAiTurn, playMove],
-  )
+  );
 
   const handleAiMove = useCallback(
     (move: Move | null) => {
       if (move === null) {
-        passTurn()
-        return
+        passTurn();
+        return;
       }
-      playMove(move)
+      playMove(move);
     },
     [passTurn, playMove],
-  )
+  );
 
   useAI({
     enabled: aiEnabled,
-    aiPlayer: 'white',
+    aiPlayer: "white",
     state,
     onResolveMove: handleAiMove,
     depth: 5,
     delayMs: 320,
-  })
+  });
 
-  const canPass = state.status === 'playing' && state.validMoves.length === 0 && !isAiTurn
+  const canPass = state.status === "playing" && state.validMoves.length === 0 && !isAiTurn;
 
   useEffect(() => {
-    if (!canPass) return
-    passTurn()
-  }, [canPass, passTurn])
+    if (!canPass) return;
+    passTurn();
+  }, [canPass, passTurn]);
 
-  const statusTitle = state.status === 'finished' ? '対局終了' : '対局中'
+  const statusTitle = state.status === "finished" ? "対局終了" : "対局中";
   const statusDetail =
-    state.status === 'finished'
+    state.status === "finished"
       ? winnerText(state.winner as Winner)
       : isAiTurn && state.validMoves.length === 0
-        ? 'AIが自動でパスします。'
+        ? "AIが自動でパスします。"
         : isAiTurn
-          ? 'AIが考えています...'
-          : `${playerLabel(state.currentPlayer)}の番です。`
+          ? "AIが考えています..."
+          : `${playerLabel(state.currentPlayer)}の番です。`;
 
   const controlsHelperText =
-    state.status === 'finished'
-      ? '対局が終わりました。最初からやり直せます。'
+    state.status === "finished"
+      ? "対局が終わりました。最初からやり直せます。"
       : aiEnabled && isAiTurn
-        ? 'AIの手番です。入力を待っています。'
+        ? "AIの手番です。入力を待っています。"
         : aiEnabled
-          ? 'あなたの番です。'
-          : null
+          ? "あなたの番です。"
+          : null;
 
   return (
     <>
@@ -117,26 +116,18 @@ function SoloRoute() {
           <Board
             board={state.board}
             validMoves={state.validMoves}
-            interactive={state.status === 'playing' && !isAiTurn}
+            interactive={state.status === "playing" && !isAiTurn}
             onMove={handleMove}
           />
         </div>
 
         <aside className="flex w-full flex-col gap-4 rounded-3xl border border-white/15 bg-black/20 p-5 backdrop-blur lg:w-80 lg:shrink-0">
-          <ScoreBoard
-            black={score.black}
-            white={score.white}
-            currentPlayer={state.currentPlayer}
-          />
-          {state.status === 'playing' && (
-            <GameStatus title={statusTitle} detail={statusDetail} />
-          )}
+          <ScoreBoard black={score.black} white={score.white} currentPlayer={state.currentPlayer} />
+          {state.status === "playing" && <GameStatus title={statusTitle} detail={statusDetail} />}
 
           <section className="flex flex-col gap-4 rounded-2xl border border-white/20 bg-white/10 p-4">
             <Toggle label="白をAIで操作" isSelected={aiEnabled} onChange={setAiEnabled} />
-            {controlsHelperText && (
-              <p className="text-sm text-white/75">{controlsHelperText}</p>
-            )}
+            {controlsHelperText && <p className="text-sm text-white/75">{controlsHelperText}</p>}
             <Button variant="secondary" onPress={handleResetPress} className="w-full">
               最初から
             </Button>
@@ -153,26 +144,26 @@ function SoloRoute() {
         </aside>
       </section>
 
-      {state.status === 'finished' && showResultModal && (
+      {state.status === "finished" && showResultModal && (
         <GameResultModal
           isOpen
           title={statusTitle}
           detail={statusDetail}
           blackScore={score.black}
           whiteScore={score.white}
-          resultTone={state.winner ?? 'draw'}
+          resultTone={state.winner ?? "draw"}
           primaryLabel="もう一度遊ぶ"
           secondaryLabel="ホームへ戻る"
           hint="もう一度遊ぶと新しい対局を開始します。"
           onViewBoard={() => setShowResultModal(false)}
           onPrimary={handleStartOver}
-          onSecondary={() => navigate({ to: '/' })}
+          onSecondary={() => navigate({ to: "/" })}
         />
       )}
     </>
-  )
+  );
 }
 
-export const Route = createFileRoute('/solo')({
+export const Route = createFileRoute("/solo")({
   component: SoloRoute,
-})
+});

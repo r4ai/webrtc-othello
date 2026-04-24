@@ -1,14 +1,14 @@
-import { Dialog, Heading, Modal, ModalOverlay } from 'react-aria-components'
-import { Button } from './Button'
+import { Dialog, Heading, Modal, ModalOverlay } from "react-aria-components";
+import { Button } from "./Button";
 
 interface ConfirmDialogProps {
-  isOpen: boolean
-  title: string
-  description?: string
-  confirmLabel: string
-  cancelLabel: string
-  onConfirm: () => void
-  onCancel: () => void
+  isOpen: boolean;
+  title: string;
+  description?: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 export function ConfirmDialog({
@@ -24,7 +24,9 @@ export function ConfirmDialog({
     <ModalOverlay
       isOpen={isOpen}
       isDismissable
-      onOpenChange={(open) => { if (!open) onCancel() }}
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
     >
       <Modal className="w-full max-w-sm rounded-3xl border border-white/15 bg-black/20 p-6 text-white shadow-2xl backdrop-blur outline-none">
@@ -32,9 +34,7 @@ export function ConfirmDialog({
           <Heading slot="title" className="text-lg font-bold tracking-tight">
             {title}
           </Heading>
-          {description && (
-            <p className="mt-2 text-sm text-white/70">{description}</p>
-          )}
+          {description && <p className="mt-2 text-sm text-white/70">{description}</p>}
           <div className="mt-6 flex gap-3">
             <Button onPress={onConfirm} variant="secondary" className="flex-1">
               {confirmLabel}
@@ -46,5 +46,5 @@ export function ConfirmDialog({
         </Dialog>
       </Modal>
     </ModalOverlay>
-  )
+  );
 }

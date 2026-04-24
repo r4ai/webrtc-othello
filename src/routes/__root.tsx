@@ -1,28 +1,28 @@
-import { createRootRoute, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useState } from 'react'
-import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { createRootRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
-const CONFIRM_BACK_ROUTES = ['/solo', '/online/match']
+const CONFIRM_BACK_ROUTES = ["/solo", "/online/match"];
 
 function RootLayout() {
-  const { location } = useRouterState()
-  const navigate = useNavigate()
-  const isHome = location.pathname === '/'
-  const requiresConfirmBack = CONFIRM_BACK_ROUTES.includes(location.pathname)
-  const [confirmingBack, setConfirmingBack] = useState(false)
+  const { location } = useRouterState();
+  const navigate = useNavigate();
+  const isHome = location.pathname === "/";
+  const requiresConfirmBack = CONFIRM_BACK_ROUTES.includes(location.pathname);
+  const [confirmingBack, setConfirmingBack] = useState(false);
 
   const handleBackPress = () => {
     if (requiresConfirmBack) {
-      setConfirmingBack(true)
+      setConfirmingBack(true);
     } else {
-      navigate({ to: '/' })
+      navigate({ to: "/" });
     }
-  }
+  };
 
   const handleConfirmBack = () => {
-    setConfirmingBack(false)
-    navigate({ to: '/' })
-  }
+    setConfirmingBack(false);
+    navigate({ to: "/" });
+  };
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_15%_20%,#2d6a4f_0%,#1b4332_38%,#081c15_100%)] px-4 py-8 text-slate-50">
@@ -39,9 +39,7 @@ function RootLayout() {
             </button>
           )}
           <h1 className="text-2xl font-black tracking-tight md:text-3xl">WebRTC Othello</h1>
-          {!isHome && (
-            <div className="shrink-0 px-3 py-1.5 w-20" />
-          )}
+          {!isHome && <div className="shrink-0 px-3 py-1.5 w-20" />}
         </header>
 
         <Outlet />
@@ -57,9 +55,9 @@ function RootLayout() {
         onCancel={() => setConfirmingBack(false)}
       />
     </main>
-  )
+  );
 }
 
 export const Route = createRootRoute({
   component: RootLayout,
-})
+});

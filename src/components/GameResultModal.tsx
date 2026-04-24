@@ -1,35 +1,35 @@
-import { clsx } from 'clsx'
-import { Dialog, Heading, Modal, ModalOverlay } from 'react-aria-components'
-import type { ReactNode } from 'react'
-import { Button } from '../ui/Button'
+import { clsx } from "clsx";
+import { Dialog, Heading, Modal, ModalOverlay } from "react-aria-components";
+import type { ReactNode } from "react";
+import { Button } from "../ui/Button";
 
 interface GameResultModalProps {
-  isOpen: boolean
-  title: string
-  detail: string
-  blackScore: number
-  whiteScore: number
-  resultTone: 'black' | 'white' | 'draw'
-  primaryLabel: string
-  secondaryLabel: string
-  primaryDisabled?: boolean
-  hint?: ReactNode
-  onViewBoard: () => void
-  onPrimary: () => void
-  onSecondary: () => void
+  isOpen: boolean;
+  title: string;
+  detail: string;
+  blackScore: number;
+  whiteScore: number;
+  resultTone: "black" | "white" | "draw";
+  primaryLabel: string;
+  secondaryLabel: string;
+  primaryDisabled?: boolean;
+  hint?: ReactNode;
+  onViewBoard: () => void;
+  onPrimary: () => void;
+  onSecondary: () => void;
 }
 
-const toneStyles: Record<GameResultModalProps['resultTone'], { badge: string }> = {
+const toneStyles: Record<GameResultModalProps["resultTone"], { badge: string }> = {
   black: {
-    badge: 'border-sky-300/35 bg-sky-300/10 text-sky-100',
+    badge: "border-sky-300/35 bg-sky-300/10 text-sky-100",
   },
   white: {
-    badge: 'border-amber-200/35 bg-amber-300/10 text-amber-50',
+    badge: "border-amber-200/35 bg-amber-300/10 text-amber-50",
   },
   draw: {
-    badge: 'border-emerald-200/35 bg-emerald-300/10 text-emerald-50',
+    badge: "border-emerald-200/35 bg-emerald-300/10 text-emerald-50",
   },
-}
+};
 
 export function GameResultModal({
   isOpen,
@@ -46,7 +46,7 @@ export function GameResultModal({
   onPrimary,
   onSecondary,
 }: GameResultModalProps) {
-  const style = toneStyles[resultTone]
+  const style = toneStyles[resultTone];
 
   return (
     <ModalOverlay
@@ -59,10 +59,18 @@ export function GameResultModal({
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
             <div className="flex flex-col gap-6 justify-between">
               <div className="flex flex-col items-start gap-2">
-                <p className={clsx('inline-flex rounded-full border px-3 py-1 text-xs font-bold tracking-[0.18em]', style.badge)}>
+                <p
+                  className={clsx(
+                    "inline-flex rounded-full border px-3 py-1 text-xs font-bold tracking-[0.18em]",
+                    style.badge,
+                  )}
+                >
                   対局結果
                 </p>
-                <Heading slot="title" className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+                <Heading
+                  slot="title"
+                  className="mt-4 text-3xl font-black tracking-tight sm:text-4xl"
+                >
                   {title}
                 </Heading>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">
@@ -85,7 +93,9 @@ export function GameResultModal({
             </div>
 
             <section className="rounded-2xl border border-white/15 bg-white/10 p-4 sm:p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/55">最終スコア</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/55">
+                最終スコア
+              </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950 text-white shadow-[0_12px_30px_rgba(2,6,23,0.35)]">
                   <div className="flex items-center justify-between px-4 pt-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
@@ -109,14 +119,14 @@ export function GameResultModal({
               </div>
 
               <p className="pt-4 text-sm leading-7 text-white/60">
-                {resultTone === 'draw'
-                  ? '引き分けでした。盤面を確認してから次の行動を選べます。'
-                  : '勝敗が決まりました。盤面を確認して、次の一手を考えられます。'}
+                {resultTone === "draw"
+                  ? "引き分けでした。盤面を確認してから次の行動を選べます。"
+                  : "勝敗が決まりました。盤面を確認して、次の一手を考えられます。"}
               </p>
             </section>
           </div>
         </Dialog>
       </Modal>
     </ModalOverlay>
-  )
+  );
 }

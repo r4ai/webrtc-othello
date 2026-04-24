@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap");
+@import "tailwindcss";
 
 :root {
   --color-board: #2d6a4f;
@@ -11,8 +11,8 @@
   --shadow-disc: 0 2px 8px rgba(0, 0, 0, 0.3);
   --transition-flip: 400ms ease-in-out;
   --focus-ring: theme(colors.amber.300);
-  --font-display: 'Manrope', 'Segoe UI', sans-serif;
-  --font-body: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', sans-serif;
+  --font-display: "Manrope", "Segoe UI", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", sans-serif;
 }
 
 * {

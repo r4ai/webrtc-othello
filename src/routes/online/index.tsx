@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Button } from '../../ui/Button'
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Button } from "../../ui/Button";
 
 function OnlineLandingRoute() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col gap-6 rounded-3xl border border-white/15 bg-black/20 p-6 text-white backdrop-blur">
@@ -19,22 +19,22 @@ function OnlineLandingRoute() {
       <div className="flex flex-col gap-3">
         <Button
           className="min-h-14 w-full text-base"
-          onPress={() => navigate({ to: '/online/join', search: { i: '' } })}
+          onPress={() => navigate({ to: "/online/join", search: { i: "" } })}
         >
           招待コードで参加
         </Button>
         <Button
           variant="secondary"
           className="min-h-12 w-full"
-          onPress={() => navigate({ to: '/online/create' })}
+          onPress={() => navigate({ to: "/online/create" })}
         >
           部屋を作る
         </Button>
       </div>
     </section>
-  )
+  );
 }
 
-export const Route = createFileRoute('/online/')({
+export const Route = createFileRoute("/online/")({
   component: OnlineLandingRoute,
-})
+});

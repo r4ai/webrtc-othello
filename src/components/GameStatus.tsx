@@ -1,6 +1,6 @@
 interface GameStatusProps {
-  title: string
-  detail: string
+  title: string;
+  detail: string;
 }
 
 export function GameStatus({ title, detail }: GameStatusProps) {
@@ -9,5 +9,5 @@ export function GameStatus({ title, detail }: GameStatusProps) {
       <p className="text-xs font-semibold text-white/55 tracking-[0.12em]">{title}</p>
       <p className="mt-1 text-xl font-bold">{detail}</p>
     </section>
-  )
+  );
 }

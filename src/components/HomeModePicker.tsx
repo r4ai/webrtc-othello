@@ -1,14 +1,11 @@
-import { Button } from '../ui/Button'
+import { Button } from "../ui/Button";
 
 interface HomeModePickerProps {
-  onSelectSolo: () => void
-  onSelectOnline: () => void
+  onSelectSolo: () => void;
+  onSelectOnline: () => void;
 }
 
-export function HomeModePicker({
-  onSelectSolo,
-  onSelectOnline,
-}: HomeModePickerProps) {
+export function HomeModePicker({ onSelectSolo, onSelectOnline }: HomeModePickerProps) {
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col gap-4 rounded-3xl border border-white/15 bg-black/20 p-6 text-white backdrop-blur">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">
@@ -22,14 +19,10 @@ export function HomeModePicker({
         <Button className="min-h-14 text-base" onPress={onSelectSolo}>
           ひとりで遊ぶ
         </Button>
-        <Button
-          className="min-h-14 text-base"
-          variant="secondary"
-          onPress={onSelectOnline}
-        >
+        <Button className="min-h-14 text-base" variant="secondary" onPress={onSelectOnline}>
           オンライン対戦
         </Button>
       </div>
     </section>
-  )
+  );
 }

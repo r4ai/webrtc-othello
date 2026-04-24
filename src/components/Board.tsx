@@ -1,18 +1,18 @@
-import { useMemo } from 'react'
-import type { Board as BoardState, Move } from '../game/types'
-import { Cell } from './Cell'
+import { useMemo } from "react";
+import type { Board as BoardState, Move } from "../game/types";
+import { Cell } from "./Cell";
 
 interface BoardProps {
-  board: BoardState
-  validMoves: Move[]
-  interactive: boolean
-  onMove: (move: Move) => void
+  board: BoardState;
+  validMoves: Move[];
+  interactive: boolean;
+  onMove: (move: Move) => void;
 }
 
 export function Board({ board, validMoves, interactive, onMove }: BoardProps) {
   const validMoveSet = useMemo(() => {
-    return new Set(validMoves.map((move) => `${move.row}-${move.col}`))
-  }, [validMoves])
+    return new Set(validMoves.map((move) => `${move.row}-${move.col}`));
+  }, [validMoves]);
 
   return (
     <div
@@ -22,8 +22,8 @@ export function Board({ board, validMoves, interactive, onMove }: BoardProps) {
     >
       {board.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
-          const key = `${rowIndex}-${colIndex}`
-          const canPlace = interactive && validMoveSet.has(key)
+          const key = `${rowIndex}-${colIndex}`;
+          const canPlace = interactive && validMoveSet.has(key);
 
           return (
             <Cell
@@ -35,9 +35,9 @@ export function Board({ board, validMoves, interactive, onMove }: BoardProps) {
               isEnabled={interactive && canPlace}
               onSelect={onMove}
             />
-          )
+          );
         }),
       )}
     </div>
-  )
+  );
 }

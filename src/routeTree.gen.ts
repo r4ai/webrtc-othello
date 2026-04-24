@@ -8,172 +8,166 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as SoloRouteImport } from './routes/solo'
-import { Route as OnlineRouteImport } from './routes/online'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as OnlineIndexRouteImport } from './routes/online/index'
-import { Route as OnlineMatchRouteImport } from './routes/online/match'
-import { Route as OnlineJoinRouteImport } from './routes/online/join'
-import { Route as OnlineCreateRouteImport } from './routes/online/create'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as SoloRouteImport } from "./routes/solo";
+import { Route as OnlineRouteImport } from "./routes/online";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as OnlineIndexRouteImport } from "./routes/online/index";
+import { Route as OnlineMatchRouteImport } from "./routes/online/match";
+import { Route as OnlineJoinRouteImport } from "./routes/online/join";
+import { Route as OnlineCreateRouteImport } from "./routes/online/create";
 
 const SoloRoute = SoloRouteImport.update({
-  id: '/solo',
-  path: '/solo',
+  id: "/solo",
+  path: "/solo",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const OnlineRoute = OnlineRouteImport.update({
-  id: '/online',
-  path: '/online',
+  id: "/online",
+  path: "/online",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const OnlineIndexRoute = OnlineIndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => OnlineRoute,
-} as any)
+} as any);
 const OnlineMatchRoute = OnlineMatchRouteImport.update({
-  id: '/match',
-  path: '/match',
+  id: "/match",
+  path: "/match",
   getParentRoute: () => OnlineRoute,
-} as any)
+} as any);
 const OnlineJoinRoute = OnlineJoinRouteImport.update({
-  id: '/join',
-  path: '/join',
+  id: "/join",
+  path: "/join",
   getParentRoute: () => OnlineRoute,
-} as any)
+} as any);
 const OnlineCreateRoute = OnlineCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
+  id: "/create",
+  path: "/create",
   getParentRoute: () => OnlineRoute,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/online': typeof OnlineRouteWithChildren
-  '/solo': typeof SoloRoute
-  '/online/create': typeof OnlineCreateRoute
-  '/online/join': typeof OnlineJoinRoute
-  '/online/match': typeof OnlineMatchRoute
-  '/online/': typeof OnlineIndexRoute
+  "/": typeof IndexRoute;
+  "/online": typeof OnlineRouteWithChildren;
+  "/solo": typeof SoloRoute;
+  "/online/create": typeof OnlineCreateRoute;
+  "/online/join": typeof OnlineJoinRoute;
+  "/online/match": typeof OnlineMatchRoute;
+  "/online/": typeof OnlineIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/solo': typeof SoloRoute
-  '/online/create': typeof OnlineCreateRoute
-  '/online/join': typeof OnlineJoinRoute
-  '/online/match': typeof OnlineMatchRoute
-  '/online': typeof OnlineIndexRoute
+  "/": typeof IndexRoute;
+  "/solo": typeof SoloRoute;
+  "/online/create": typeof OnlineCreateRoute;
+  "/online/join": typeof OnlineJoinRoute;
+  "/online/match": typeof OnlineMatchRoute;
+  "/online": typeof OnlineIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/online': typeof OnlineRouteWithChildren
-  '/solo': typeof SoloRoute
-  '/online/create': typeof OnlineCreateRoute
-  '/online/join': typeof OnlineJoinRoute
-  '/online/match': typeof OnlineMatchRoute
-  '/online/': typeof OnlineIndexRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/online": typeof OnlineRouteWithChildren;
+  "/solo": typeof SoloRoute;
+  "/online/create": typeof OnlineCreateRoute;
+  "/online/join": typeof OnlineJoinRoute;
+  "/online/match": typeof OnlineMatchRoute;
+  "/online/": typeof OnlineIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/online'
-    | '/solo'
-    | '/online/create'
-    | '/online/join'
-    | '/online/match'
-    | '/online/'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/solo'
-    | '/online/create'
-    | '/online/join'
-    | '/online/match'
-    | '/online'
+    | "/"
+    | "/online"
+    | "/solo"
+    | "/online/create"
+    | "/online/join"
+    | "/online/match"
+    | "/online/";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "/solo" | "/online/create" | "/online/join" | "/online/match" | "/online";
   id:
-    | '__root__'
-    | '/'
-    | '/online'
-    | '/solo'
-    | '/online/create'
-    | '/online/join'
-    | '/online/match'
-    | '/online/'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/online"
+    | "/solo"
+    | "/online/create"
+    | "/online/join"
+    | "/online/match"
+    | "/online/";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  OnlineRoute: typeof OnlineRouteWithChildren
-  SoloRoute: typeof SoloRoute
+  IndexRoute: typeof IndexRoute;
+  OnlineRoute: typeof OnlineRouteWithChildren;
+  SoloRoute: typeof SoloRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/solo': {
-      id: '/solo'
-      path: '/solo'
-      fullPath: '/solo'
-      preLoaderRoute: typeof SoloRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/online': {
-      id: '/online'
-      path: '/online'
-      fullPath: '/online'
-      preLoaderRoute: typeof OnlineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/online/': {
-      id: '/online/'
-      path: '/'
-      fullPath: '/online/'
-      preLoaderRoute: typeof OnlineIndexRouteImport
-      parentRoute: typeof OnlineRoute
-    }
-    '/online/match': {
-      id: '/online/match'
-      path: '/match'
-      fullPath: '/online/match'
-      preLoaderRoute: typeof OnlineMatchRouteImport
-      parentRoute: typeof OnlineRoute
-    }
-    '/online/join': {
-      id: '/online/join'
-      path: '/join'
-      fullPath: '/online/join'
-      preLoaderRoute: typeof OnlineJoinRouteImport
-      parentRoute: typeof OnlineRoute
-    }
-    '/online/create': {
-      id: '/online/create'
-      path: '/create'
-      fullPath: '/online/create'
-      preLoaderRoute: typeof OnlineCreateRouteImport
-      parentRoute: typeof OnlineRoute
-    }
+    "/solo": {
+      id: "/solo";
+      path: "/solo";
+      fullPath: "/solo";
+      preLoaderRoute: typeof SoloRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/online": {
+      id: "/online";
+      path: "/online";
+      fullPath: "/online";
+      preLoaderRoute: typeof OnlineRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/online/": {
+      id: "/online/";
+      path: "/";
+      fullPath: "/online/";
+      preLoaderRoute: typeof OnlineIndexRouteImport;
+      parentRoute: typeof OnlineRoute;
+    };
+    "/online/match": {
+      id: "/online/match";
+      path: "/match";
+      fullPath: "/online/match";
+      preLoaderRoute: typeof OnlineMatchRouteImport;
+      parentRoute: typeof OnlineRoute;
+    };
+    "/online/join": {
+      id: "/online/join";
+      path: "/join";
+      fullPath: "/online/join";
+      preLoaderRoute: typeof OnlineJoinRouteImport;
+      parentRoute: typeof OnlineRoute;
+    };
+    "/online/create": {
+      id: "/online/create";
+      path: "/create";
+      fullPath: "/online/create";
+      preLoaderRoute: typeof OnlineCreateRouteImport;
+      parentRoute: typeof OnlineRoute;
+    };
   }
 }
 
 interface OnlineRouteChildren {
-  OnlineCreateRoute: typeof OnlineCreateRoute
-  OnlineJoinRoute: typeof OnlineJoinRoute
-  OnlineMatchRoute: typeof OnlineMatchRoute
-  OnlineIndexRoute: typeof OnlineIndexRoute
+  OnlineCreateRoute: typeof OnlineCreateRoute;
+  OnlineJoinRoute: typeof OnlineJoinRoute;
+  OnlineMatchRoute: typeof OnlineMatchRoute;
+  OnlineIndexRoute: typeof OnlineIndexRoute;
 }
 
 const OnlineRouteChildren: OnlineRouteChildren = {
@@ -181,16 +175,15 @@ const OnlineRouteChildren: OnlineRouteChildren = {
   OnlineJoinRoute: OnlineJoinRoute,
   OnlineMatchRoute: OnlineMatchRoute,
   OnlineIndexRoute: OnlineIndexRoute,
-}
+};
 
-const OnlineRouteWithChildren =
-  OnlineRoute._addFileChildren(OnlineRouteChildren)
+const OnlineRouteWithChildren = OnlineRoute._addFileChildren(OnlineRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OnlineRoute: OnlineRouteWithChildren,
   SoloRoute: SoloRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
