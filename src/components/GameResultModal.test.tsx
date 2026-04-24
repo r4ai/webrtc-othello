@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
 import { GameResultModal } from './GameResultModal'
 
@@ -6,6 +6,7 @@ describe('GameResultModal', () => {
   test('renders full-screen end state content', () => {
     const onPrimary = vi.fn()
     const onSecondary = vi.fn()
+    const onViewBoard = vi.fn()
 
     const { getByText, getByRole } = render(
       <GameResultModal
@@ -18,6 +19,7 @@ describe('GameResultModal', () => {
         primaryLabel="再戦を申し込む"
         secondaryLabel="対戦を終了"
         hint="再戦を申し込むか、対戦を終了できます。"
+        onViewBoard={onViewBoard}
         onPrimary={onPrimary}
         onSecondary={onSecondary}
       />,
@@ -29,6 +31,8 @@ describe('GameResultModal', () => {
     expect(getByText('28')).toBeInTheDocument()
     expect(getByText('36')).toBeInTheDocument()
     expect(getByRole('button', { name: '再戦を申し込む' })).toBeInTheDocument()
+    fireEvent.click(getByRole('button', { name: '盤面を見る' }))
+    expect(onViewBoard).toHaveBeenCalledTimes(1)
     expect(getByRole('button', { name: '対戦を終了' })).toBeInTheDocument()
   })
 })

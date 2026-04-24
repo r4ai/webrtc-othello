@@ -20,6 +20,7 @@ function winnerText(winner: Winner): string {
 function MatchRoute() {
   const { viewModel: online, actions } = useOnlineMatchContext()
   const navigate = useNavigate()
+  const [showResultModal, setShowResultModal] = useState(false)
 
   const [initialConnectionState] = useState(online.connectionState)
   useEffect(() => {
@@ -27,6 +28,12 @@ function MatchRoute() {
       navigate({ to: '/online', replace: true })
     }
   }, [initialConnectionState, navigate])
+
+  useEffect(() => {
+    if (online.gameState.status === 'finished') {
+      setShowResultModal(true)
+    }
+  }, [online.gameState.status])
 
   const localPlayer =
     online.localRole === 'host' ? 'black' : online.localRole === 'guest' ? 'white' : null
@@ -99,7 +106,7 @@ function MatchRoute() {
         </aside>
       </section>
 
-      {online.gameState.status === 'finished' && (
+      {online.gameState.status === 'finished' && showResultModal && (
         <GameResultModal
           isOpen
           title={statusTitle}
@@ -123,8 +130,10 @@ function MatchRoute() {
                 ? '再戦の返答を待っています。'
                 : '再戦を申し込むか、対戦を終了できます。'
           }
+          onViewBoard={() => setShowResultModal(false)}
           onPrimary={actions.requestRematch}
           onSecondary={() => {
+            setShowResultModal(false)
             actions.leaveMatch()
             navigate({ to: '/' })
           }}

@@ -25,6 +25,13 @@ function SoloRoute() {
   const navigate = useNavigate()
   const [aiEnabled, setAiEnabled] = useState(true)
   const [confirmingReset, setConfirmingReset] = useState(false)
+  const [showResultModal, setShowResultModal] = useState(false)
+
+  useEffect(() => {
+    if (state.status === 'finished') {
+      setShowResultModal(true)
+    }
+  }, [state.status])
 
   const handleResetPress = () => {
     if (state.status === 'playing') {
@@ -36,6 +43,12 @@ function SoloRoute() {
 
   const handleConfirmReset = () => {
     setConfirmingReset(false)
+    setShowResultModal(false)
+    resetGame()
+  }
+
+  const handleStartOver = () => {
+    setShowResultModal(false)
     resetGame()
   }
 
@@ -140,7 +153,7 @@ function SoloRoute() {
         </aside>
       </section>
 
-      {state.status === 'finished' && (
+      {state.status === 'finished' && showResultModal && (
         <GameResultModal
           isOpen
           title={statusTitle}
@@ -151,7 +164,8 @@ function SoloRoute() {
           primaryLabel="もう一度遊ぶ"
           secondaryLabel="ホームへ戻る"
           hint="もう一度遊ぶと新しい対局を開始します。"
-          onPrimary={resetGame}
+          onViewBoard={() => setShowResultModal(false)}
+          onPrimary={handleStartOver}
           onSecondary={() => navigate({ to: '/' })}
         />
       )}
