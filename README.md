@@ -21,34 +21,29 @@
 ## 技術スタック
 
 - React 19 / TypeScript
-- [Vite Plus](https://github.com/vite-plus/vite-plus) — Vite をベースにしたオールインワンツールチェーン（dev / build / lint / fmt / test を `vp` コマンドに統合）
-- TanStack Router（ファイルベースルーティング）
+- [Vite Plus](https://github.com/vite-plus/vite-plus)
+- TanStack Router
 - Tailwind CSS v4
 - Vitest
-- Cloudflare Workers（静的アセット配信）
+- Cloudflare Workers
 
 ## 開発
 
 ```bash
-npm install
-vp config  # vite-plus の設定を生成（初回のみ）
+vp install
 vp dev
 ```
 
 ## コマンド
 
-| コマンド                 | 説明                           |
-| ------------------------ | ------------------------------ |
-| `vp dev`                 | 開発サーバー起動               |
-| `tsc -b && vp build`     | プロダクションビルド           |
-| `vp lint .`              | Lint チェック                  |
-| `vp preview`             | ビルド結果のプレビュー         |
-| `vp test run`            | テスト実行                     |
-| `vp test`                | ウォッチモードでテスト         |
-| `vp test run --coverage` | カバレッジ付きテスト           |
-| `vp config`              | vite-plus の設定ファイルを生成 |
-
-ステージング時は `vp check --fix` が自動で実行され、コミット前に lint と format が適用される。
+| コマンド             | 説明                   |
+| -------------------- | ---------------------- |
+| `vp dev`             | 開発サーバー起動       |
+| `vp run build`       | プロダクションビルド   |
+| `vp check`           | 静的解析               |
+| `vp preview`         | ビルド結果のプレビュー |
+| `vp test`            | テスト                 |
+| `vp test --coverage` | カバレッジ付きテスト   |
 
 ## アーキテクチャ
 
