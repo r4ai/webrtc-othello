@@ -31,22 +31,22 @@
 
 ```bash
 npm install
-npm run prepare  # vite-plus の設定を生成（初回のみ）
-npm run dev
+vp config  # vite-plus の設定を生成（初回のみ）
+vp dev
 ```
 
 ## コマンド
 
-| コマンド                | 説明                           |
-| ----------------------- | ------------------------------ |
-| `npm run dev`           | 開発サーバー起動（`vp dev`）   |
-| `npm run build`         | プロダクションビルド           |
-| `npm run lint`          | Lint チェック（`vp lint`）     |
-| `npm run preview`       | ビルド結果のプレビュー         |
-| `npm test`              | テスト実行（`vp test run`）    |
-| `npm run test:watch`    | ウォッチモードでテスト         |
-| `npm run test:coverage` | カバレッジ付きテスト           |
-| `npm run prepare`       | vite-plus の設定ファイルを生成 |
+| コマンド                 | 説明                           |
+| ------------------------ | ------------------------------ |
+| `vp dev`                 | 開発サーバー起動               |
+| `tsc -b && vp build`     | プロダクションビルド           |
+| `vp lint .`              | Lint チェック                  |
+| `vp preview`             | ビルド結果のプレビュー         |
+| `vp test run`            | テスト実行                     |
+| `vp test`                | ウォッチモードでテスト         |
+| `vp test run --coverage` | カバレッジ付きテスト           |
+| `vp config`              | vite-plus の設定ファイルを生成 |
 
 ステージング時は `vp check --fix` が自動で実行され、コミット前に lint と format が適用される。
 
