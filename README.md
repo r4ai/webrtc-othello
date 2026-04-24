@@ -21,7 +21,7 @@
 ## 技術スタック
 
 - React 19 / TypeScript
-- [Vite Plus](https://github.com/vite-plus/vite-plus)
+- Vite+
 - TanStack Router
 - Tailwind CSS v4
 - Vitest
