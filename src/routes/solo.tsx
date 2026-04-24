@@ -111,7 +111,7 @@ function SoloRoute() {
           white={score.white}
           currentPlayer={state.currentPlayer}
         />
-        <GameStatus title={statusTitle} detail={statusDetail} />
+        <GameStatus title={statusTitle} detail={statusDetail} status={state.status} />
 
         <section className="flex flex-col gap-4 rounded-2xl border border-white/20 bg-white/10 p-4">
           <Toggle label="白をAIで操作" isSelected={aiEnabled} onChange={setAiEnabled} />

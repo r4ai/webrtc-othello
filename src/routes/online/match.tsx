@@ -78,7 +78,7 @@ function MatchRoute() {
           white={online.score.white}
           currentPlayer={online.gameState.currentPlayer}
         />
-        <GameStatus title={statusTitle} detail={statusDetail} />
+        <GameStatus title={statusTitle} detail={statusDetail} status={online.gameState.status} />
         <OnlineControls
           message={controlsMessage}
           canPass={onlineCanPass}

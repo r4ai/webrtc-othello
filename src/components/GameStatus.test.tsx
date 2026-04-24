@@ -20,10 +20,13 @@ describe('GameStatus', () => {
       <GameStatus
         title="ゲーム終了"
         detail="白の勝ちです。"
+        status="finished"
       />,
     )
 
     expect(getByText('ゲーム終了')).toBeInTheDocument()
     expect(getByText('白の勝ちです。')).toBeInTheDocument()
+    expect(getByText('対局終了')).toBeInTheDocument()
+    expect(getByText('再戦するか、最初からやり直せます。')).toBeInTheDocument()
   })
 })
