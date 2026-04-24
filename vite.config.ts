@@ -8,7 +8,9 @@ export default defineConfig({
   staged: {
     "*": "vp check --fix",
   },
-  fmt: {},
+  fmt: {
+    ignorePatterns: ["src/routeTree.gen.ts"],
+  },
   lint: {
     plugins: ["oxc", "typescript", "unicorn", "react"],
     categories: {
