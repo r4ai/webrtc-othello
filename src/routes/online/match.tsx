@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Board } from '../../components/Board'
+import { GameResultModal } from '../../components/GameResultModal'
 import { GameStatus } from '../../components/GameStatus'
 import { OnlineControls } from '../../components/OnlineControls'
 import { ScoreBoard } from '../../components/ScoreBoard'
@@ -33,7 +34,7 @@ function MatchRoute() {
     online.canInteract &&
     online.gameState.status === 'playing' &&
     online.gameState.validMoves.length === 0
-  const statusTitle = online.gameState.status === 'finished' ? 'ゲーム終了' : '対局中'
+  const statusTitle = online.gameState.status === 'finished' ? '対局終了' : '対局中'
   const statusDetail =
     online.gameState.status === 'finished'
       ? winnerText(online.gameState.winner as Winner)
@@ -57,43 +58,79 @@ function MatchRoute() {
               : '相手の手番です。'
 
   return (
-    <section className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
-      <div className="flex w-full flex-col items-center rounded-[calc(var(--radius-board)+8px)] border border-white/15 bg-black/25 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm lg:w-120 lg:shrink-0">
-        <Board
-          board={online.gameState.board}
-          validMoves={online.gameState.validMoves}
-          interactive={online.canInteract}
-          onMove={actions.submitMove}
-        />
-      </div>
+    <>
+      <section className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
+        <div className="flex w-full flex-col items-center rounded-[calc(var(--radius-board)+8px)] border border-white/15 bg-black/25 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm lg:w-120 lg:shrink-0">
+          <Board
+            board={online.gameState.board}
+            validMoves={online.gameState.validMoves}
+            interactive={online.canInteract}
+            onMove={actions.submitMove}
+          />
+        </div>
 
-      <aside className="flex w-full flex-col gap-4 rounded-3xl border border-white/15 bg-black/20 p-5 backdrop-blur lg:w-80 lg:shrink-0">
-        {online.errorMessage !== null ? (
-          <StatusLine tone="error">{online.errorMessage}</StatusLine>
-        ) : (
-          <StatusLine>接続済み / あなたは{online.localPlayerLabel}です</StatusLine>
-        )}
-        <ScoreBoard
-          black={online.score.black}
-          white={online.score.white}
-          currentPlayer={online.gameState.currentPlayer}
-        />
-        <GameStatus title={statusTitle} detail={statusDetail} status={online.gameState.status} />
-        <OnlineControls
-          message={controlsMessage}
-          canPass={onlineCanPass}
-          canRequestRematch={online.canRequestRematch}
-          pendingRematch={online.pendingRematch}
-          peerRequestedRematch={online.peerRequestedRematch}
-          onPass={actions.submitPass}
-          onRematch={actions.requestRematch}
-          onLeave={() => {
+        <aside className="flex w-full flex-col gap-4 rounded-3xl border border-white/15 bg-black/20 p-5 backdrop-blur lg:w-80 lg:shrink-0">
+          {online.errorMessage !== null ? (
+            <StatusLine tone="error">{online.errorMessage}</StatusLine>
+          ) : (
+            <StatusLine>接続済み / あなたは{online.localPlayerLabel}です</StatusLine>
+          )}
+          <ScoreBoard
+            black={online.score.black}
+            white={online.score.white}
+            currentPlayer={online.gameState.currentPlayer}
+          />
+          {online.gameState.status === 'playing' && (
+            <GameStatus title={statusTitle} detail={statusDetail} />
+          )}
+          <OnlineControls
+            message={controlsMessage}
+            canPass={onlineCanPass}
+            canRequestRematch={online.canRequestRematch}
+            pendingRematch={online.pendingRematch}
+            peerRequestedRematch={online.peerRequestedRematch}
+            onPass={actions.submitPass}
+            onRematch={actions.requestRematch}
+            onLeave={() => {
+              actions.leaveMatch()
+              navigate({ to: '/' })
+            }}
+          />
+        </aside>
+      </section>
+
+      {online.gameState.status === 'finished' && (
+        <GameResultModal
+          isOpen
+          title={statusTitle}
+          detail={statusDetail}
+          blackScore={online.score.black}
+          whiteScore={online.score.white}
+          resultTone={online.gameState.winner ?? 'draw'}
+          primaryLabel={
+            online.peerRequestedRematch
+              ? '再戦を承認'
+              : online.pendingRematch
+                ? '再戦を申請中'
+                : '再戦を申し込む'
+          }
+          secondaryLabel="対戦を終了"
+          primaryDisabled={online.pendingRematch && !online.peerRequestedRematch}
+          hint={
+            online.peerRequestedRematch
+              ? '相手が再戦を希望しています。承認すると次の対局が始まります。'
+              : online.pendingRematch
+                ? '再戦の返答を待っています。'
+                : '再戦を申し込むか、対戦を終了できます。'
+          }
+          onPrimary={actions.requestRematch}
+          onSecondary={() => {
             actions.leaveMatch()
             navigate({ to: '/' })
           }}
         />
-      </aside>
-    </section>
+      )}
+    </>
   )
 }
 
