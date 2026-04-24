@@ -34,7 +34,7 @@ function JoinRoute() {
 
   useEffect(() => {
     if (viewModel.connectionState === "connected") {
-      navigate({ to: "/online/match" });
+      void navigate({ to: "/online/match" });
     }
   }, [viewModel.connectionState, navigate]);
 

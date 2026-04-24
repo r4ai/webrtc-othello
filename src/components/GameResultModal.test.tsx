@@ -1,4 +1,4 @@
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "../test/render";
 import { describe, expect, test, vi } from "vite-plus/test";
 import { GameResultModal } from "./GameResultModal";
 

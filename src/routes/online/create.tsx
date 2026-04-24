@@ -36,13 +36,13 @@ function CreateRoute() {
   useEffect(() => {
     if (!started.current) {
       started.current = true;
-      actions.createRoom();
+      void actions.createRoom();
     }
   }, [actions]);
 
   useEffect(() => {
     if (viewModel.connectionState === "connected") {
-      navigate({ to: "/online/match" });
+      void navigate({ to: "/online/match" });
     }
   }, [viewModel.connectionState, navigate]);
 
@@ -58,7 +58,7 @@ function CreateRoute() {
 
   const handleCopyLink = () => {
     if (!shareableLink) return;
-    navigator.clipboard.writeText(shareableLink).then(() => setCopiedLink(true));
+    void navigator.clipboard.writeText(shareableLink).then(() => setCopiedLink(true));
   };
 
   const handleConnect = () => {

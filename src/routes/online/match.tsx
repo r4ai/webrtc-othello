@@ -25,7 +25,7 @@ function MatchRoute() {
   const [initialConnectionState] = useState(online.connectionState);
   useEffect(() => {
     if (initialConnectionState !== "connected") {
-      navigate({ to: "/online", replace: true });
+      void navigate({ to: "/online", replace: true });
     }
   }, [initialConnectionState, navigate]);
 
@@ -100,7 +100,7 @@ function MatchRoute() {
             onRematch={actions.requestRematch}
             onLeave={() => {
               actions.leaveMatch();
-              navigate({ to: "/" });
+              void navigate({ to: "/" });
             }}
           />
         </aside>
@@ -135,7 +135,7 @@ function MatchRoute() {
           onSecondary={() => {
             setShowResultModal(false);
             actions.leaveMatch();
-            navigate({ to: "/" });
+            void navigate({ to: "/" });
           }}
         />
       )}

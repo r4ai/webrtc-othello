@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "../test/render";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 import { ConfirmDialog } from "./ConfirmDialog";

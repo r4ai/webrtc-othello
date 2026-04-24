@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen } from "./test/render";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vite-plus/test";
 import type { Move } from "./game/types";
@@ -165,7 +165,7 @@ describe("Solo route logic", () => {
     expect(await screen.findByText("引き分けです。")).toBeInTheDocument();
     expect(screen.getByText("対局が終わりました。最初からやり直せます。")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "最初から" }));
+    await user.click(screen.getByRole("button", { name: "もう一度遊ぶ" }));
 
     expect(gameHookValue.resetGame).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("heading", { name: "対局を中断しますか？" })).not.toBeInTheDocument();

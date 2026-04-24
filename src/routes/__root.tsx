@@ -15,13 +15,13 @@ function RootLayout() {
     if (requiresConfirmBack) {
       setConfirmingBack(true);
     } else {
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     }
   };
 
   const handleConfirmBack = () => {
     setConfirmingBack(false);
-    navigate({ to: "/" });
+    void navigate({ to: "/" });
   };
 
   return (

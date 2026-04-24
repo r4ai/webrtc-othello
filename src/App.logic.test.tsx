@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "./test/render";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vite-plus/test";
 import type { GameState, MatchConnectionState, PlayerRole } from "./game/types";
@@ -460,10 +460,12 @@ describe("App online logic", () => {
     };
 
     renderAt("/online/match");
-    await user.click(await screen.findByRole("button", { name: "対戦を終了" }));
-    await user.click(await screen.findByRole("button", { name: "終了する" }));
+    const resultDialog = await screen.findByRole("dialog", { name: "対局終了" });
+    await user.click(within(resultDialog).getByRole("button", { name: "対戦を終了" }));
 
-    expect(leaveMatch).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(leaveMatch).toHaveBeenCalledTimes(1);
+    });
     expect(window.location.pathname).toBe("/");
     expect(await screen.findByRole("button", { name: "オンライン対戦" })).toBeInTheDocument();
   });

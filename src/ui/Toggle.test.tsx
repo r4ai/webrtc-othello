@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render } from "../test/render";
 import { describe, expect, test } from "vite-plus/test";
 import { Toggle } from "./Toggle";
 
