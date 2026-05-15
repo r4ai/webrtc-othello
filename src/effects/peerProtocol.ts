@@ -1,4 +1,9 @@
-import type { GameState, MatchConnectionState, PlayerRole } from "../game/types";
+import {
+  BOARD_SIZE,
+  type GameState,
+  type MatchConnectionState,
+  type PlayerRole,
+} from "../game/types";
 
 export interface MatchSnapshot {
   gameState: GameState;
@@ -92,10 +97,53 @@ function hasMovePayload(value: unknown): value is { row: number; col: number } {
   return isRecord(value) && isInteger(value["row"]) && isInteger(value["col"]);
 }
 
+function isCell(value: unknown): value is "black" | "white" | null {
+  return value === "black" || value === "white" || value === null;
+}
+
+function isBoard(value: unknown): value is GameState["board"] {
+  return (
+    Array.isArray(value) &&
+    value.length === BOARD_SIZE &&
+    value.every((row) => {
+      return Array.isArray(row) && row.length === BOARD_SIZE && row.every(isCell);
+    })
+  );
+}
+
+function isPlayer(value: unknown): value is GameState["currentPlayer"] {
+  return value === "black" || value === "white";
+}
+
+function isGameStatus(value: unknown): value is GameState["status"] {
+  return value === "playing" || value === "finished";
+}
+
+function isWinner(value: unknown): value is GameState["winner"] {
+  return value === "black" || value === "white" || value === "draw" || value === null;
+}
+
+function isMove(value: unknown): value is { row: number; col: number } {
+  return hasMovePayload(value);
+}
+
+function isGameState(value: unknown): value is GameState {
+  return (
+    isRecord(value) &&
+    isBoard(value["board"]) &&
+    isPlayer(value["currentPlayer"]) &&
+    Array.isArray(value["validMoves"]) &&
+    value["validMoves"].every(isMove) &&
+    isInteger(value["consecutivePasses"]) &&
+    isGameStatus(value["status"]) &&
+    isWinner(value["winner"])
+  );
+}
+
 function hasSnapshotPayload(value: unknown): value is MatchSnapshot {
   return (
     isRecord(value) &&
-    isRecord(value["gameState"]) &&
+    isGameState(value["gameState"]) &&
     typeof value["matchId"] === "string" &&
     isInteger(value["revision"])
   );

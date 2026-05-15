@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vite-plus/test";
+import { createInitialGameState } from "../game/game";
 import { decodeInvitePayload, decodePeerEnvelope, encodeInvitePayload } from "./peerProtocol";
 
 describe("peerProtocol", () => {
@@ -34,6 +35,29 @@ describe("peerProtocol", () => {
       revision: 3,
       payload: { row: 2, col: 4 },
     });
+
+    const gameState = createInitialGameState();
+    expect(
+      decodePeerEnvelope(
+        JSON.stringify({
+          type: "sync-state",
+          revision: 1,
+          payload: {
+            gameState,
+            matchId: "match-1",
+            revision: 1,
+          },
+        }),
+      ),
+    ).toEqual({
+      type: "sync-state",
+      revision: 1,
+      payload: {
+        gameState,
+        matchId: "match-1",
+        revision: 1,
+      },
+    });
   });
 
   test("rejects malformed peer envelopes", () => {
@@ -43,6 +67,20 @@ describe("peerProtocol", () => {
           type: "sync-state",
           revision: 1,
           payload: { matchId: "match-1", revision: 1 },
+        }),
+      ),
+    ).toThrow("invalid peer envelope");
+
+    expect(() =>
+      decodePeerEnvelope(
+        JSON.stringify({
+          type: "sync-state",
+          revision: 1,
+          payload: {
+            gameState: {},
+            matchId: "match-1",
+            revision: 1,
+          },
         }),
       ),
     ).toThrow("invalid peer envelope");
