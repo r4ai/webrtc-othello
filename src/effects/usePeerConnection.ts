@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MatchConnectionState, PlayerRole } from "../game/types";
-import { decodeInvitePayload, encodeInvitePayload, type PeerEnvelope } from "./peerProtocol";
+import {
+  decodeInvitePayload,
+  decodePeerEnvelope,
+  encodeInvitePayload,
+  type PeerEnvelope,
+} from "./peerProtocol";
 
 interface UsePeerConnectionOptions {
   onEnvelope: (envelope: PeerEnvelope) => void;
@@ -113,7 +118,7 @@ export function usePeerConnection({
 
     channel.addEventListener("message", (event) => {
       try {
-        const envelope = JSON.parse(event.data) as PeerEnvelope;
+        const envelope = decodePeerEnvelope(event.data);
         onEnvelopeRef.current(envelope);
       } catch {
         setErrorMessage("受信データを解釈できませんでした。");

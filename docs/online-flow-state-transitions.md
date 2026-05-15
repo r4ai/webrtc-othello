@@ -105,3 +105,4 @@ stateDiagram-v2
 - 現在の接続方式はシグナリングサーバなしの WebRTC 手動 SDP 交換で、`host-offer` と `guest-answer` の両方が必要。
 - 応答コードを完全になくすには、別のシグナリング経路を導入する必要がある。
 - ホスト画面は raw な `connectionState` だけでなく、「まだ answer code を待っているか」を状態として持つ。これにより peer が先に `connecting` を報告しても入力欄を維持する。
+- DataChannel から受信した JSON は `PeerEnvelope` の `type` と payload 形状を検証してから対局状態へ反映する。不正な envelope は受信エラーとして扱う。
