@@ -74,21 +74,21 @@ stateDiagram-v2
 
 ### 3. 対局中フロー
 
-| ID     | 現状態                               | トリガ                           | 次状態                | 期待結果                          | テスト                        |
-| ------ | ------------------------------------ | -------------------------------- | --------------------- | --------------------------------- | ----------------------------- |
-| OF-M01 | `host` + 自分手番                    | `submitMove(valid)`              | `sync-state`          | 盤面進行、revision+1              | `useOnlineMatch`              |
-| OF-M02 | `guest` + 自分手番                   | `submitMove(valid)`              | `move-request`送信    | ホストに着手依頼                  | `useOnlineMatch`              |
-| OF-M03 | `host`                               | `move-request(stale)`            | 状態維持              | エラー表示 + 最新盤面再送         | `useOnlineMatch`              |
-| OF-M04 | `host`                               | `move-request(invalid)`          | 状態維持              | `error`送信                       | `useOnlineMatch`              |
-| OF-M05 | `host` + パス可                      | `pass-request(valid)`            | `sync-state`          | 手番進行                          | `useOnlineMatch`              |
-| OF-M06 | `host`                               | `pass-request(invalid)`          | 状態維持              | `error`送信 + 最新盤面再送        | `useOnlineMatch`              |
-| OF-M07 | `guest` + パス可                     | `submitPass()`                   | `pass-request`送信    | ホストにパス依頼                  | `useOnlineMatch`              |
-| OF-M08 | 接続不可 or 他人手番                 | `submitMove/submitPass`          | 状態維持              | 何もしない                        | `useOnlineMatch`              |
-| OF-M09 | `finished`                           | `requestRematch()`               | `pendingRematch=true` | 再戦申請送信                      | `useOnlineMatch`              |
-| OF-M10 | `host` + `peerRequestedRematch=true` | `requestRematch()`               | 初期盤面へ            | `rematch-accepted` + `sync-state` | `useOnlineMatch`              |
-| OF-M11 | `guest` + `rematch-accepted`受信     | 状態維持                         | 再戦待ちフラグ解除    | `useOnlineMatch`                  |
-| OF-M12 | 接続中                               | `peer-left` / `onConnectionLost` | エラー表示            | 切断通知表示                      | `useOnlineMatch`              |
-| OF-M13 | 接続中                               | `leaveMatch()`                   | `/`                   | `peer-left`送信後に初期化         | `useOnlineMatch`, `App.logic` |
+| ID     | 現状態                               | トリガ                           | 次状態                | 期待結果                                   | テスト                        |
+| ------ | ------------------------------------ | -------------------------------- | --------------------- | ------------------------------------------ | ----------------------------- |
+| OF-M01 | `host` + 自分手番                    | `submitMove(valid)`              | `sync-state`          | 盤面進行、revision+1                       | `useOnlineMatch`              |
+| OF-M02 | `guest` + 自分手番                   | `submitMove(valid)`              | `move-request`送信    | ホストに着手依頼                           | `useOnlineMatch`              |
+| OF-M03 | `host`                               | `move-request(stale)`            | 状態維持              | エラー表示 + 最新盤面再送                  | `useOnlineMatch`              |
+| OF-M04 | `host`                               | `move-request(invalid)`          | 状態維持              | `error`送信                                | `useOnlineMatch`              |
+| OF-M05 | `host` + パス可                      | `pass-request(valid)`            | `sync-state`          | 手番進行                                   | `useOnlineMatch`              |
+| OF-M06 | `host`                               | `pass-request(invalid)`          | 状態維持              | `error`送信 + 最新盤面再送                 | `useOnlineMatch`              |
+| OF-M07 | `guest` + パス可                     | `submitPass()`                   | `pass-request`送信    | ホストにパス依頼                           | `useOnlineMatch`              |
+| OF-M08 | 接続不可 or 他人手番                 | `submitMove/submitPass`          | 状態維持              | 何もしない                                 | `useOnlineMatch`              |
+| OF-M09 | `finished`                           | `requestRematch()`               | `pendingRematch=true` | 再戦申請送信                               | `useOnlineMatch`              |
+| OF-M10 | `host` + `peerRequestedRematch=true` | `requestRematch()`               | 初期盤面へ            | `rematch-accepted` + `sync-state`          | `useOnlineMatch`              |
+| OF-M11 | `guest` + `rematch-accepted`受信     | 状態維持                         | 再戦待ちフラグ解除    | `useOnlineMatch`                           |
+| OF-M12 | 接続中                               | `peer-left` / `onConnectionLost` | エラー表示            | 切断通知表示、着手・パス・再戦操作を無効化 | `useOnlineMatch`              |
+| OF-M13 | 接続中                               | `leaveMatch()`                   | `/`                   | `peer-left`送信後に初期化                  | `useOnlineMatch`, `App.logic` |
 
 ## テスト抜け防止の進め方
 
@@ -106,3 +106,5 @@ stateDiagram-v2
 - 応答コードを完全になくすには、別のシグナリング経路を導入する必要がある。
 - ホスト画面は raw な `connectionState` だけでなく、「まだ answer code を待っているか」を状態として持つ。これにより peer が先に `connecting` を報告しても入力欄を維持する。
 - ICE gathering は STUN やブラウザ状態によって完了イベントが返らない場合があるため、一定時間で待機を打ち切り、取得済みの `localDescription` でコード生成を継続する。
+- `peer-left` を受信した後は WebRTC の raw state が一時的に `connected` のままでも、オンライン対局の操作は peer 不在として扱い無効化する。
+- WebRTC オブジェクトの `close` / `connectionstatechange` は、新しい部屋作成後に古い接続から遅れて届くことがある。状態へ反映するのは現在保持している peer/channel のイベントだけにする。
