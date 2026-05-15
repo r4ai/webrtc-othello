@@ -124,6 +124,10 @@ export function usePeerConnection({
     });
 
     channel.addEventListener("message", (event) => {
+      if (channelRef.current !== channel) {
+        return;
+      }
+
       try {
         const envelope = JSON.parse(event.data) as PeerEnvelope;
         onEnvelopeRef.current(envelope);

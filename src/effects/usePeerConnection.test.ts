@@ -20,6 +20,10 @@ class FakeDataChannel extends EventTarget {
     this.dispatchEvent(new Event("close"));
   }
 
+  fireMessage(data: string) {
+    this.dispatchEvent(new MessageEvent("message", { data }));
+  }
+
   send(message: string) {
     this.sent.push(message);
   }
@@ -115,5 +119,35 @@ describe("usePeerConnection", () => {
 
     expect(result.current.connectionState).toBe("code-ready");
     expect(onConnectionLost).not.toHaveBeenCalled();
+  });
+
+  test("ignores messages from stale channels after recreating a room", async () => {
+    const onEnvelope = vi.fn();
+    const { result } = renderHook(() =>
+      usePeerConnection({
+        onEnvelope,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.createRoom();
+    });
+
+    const firstChannel = FakePeerConnection.instances[0]?.channels[0];
+
+    await act(async () => {
+      await result.current.createRoom();
+    });
+
+    act(() => {
+      firstChannel?.fireMessage(
+        JSON.stringify({
+          type: "peer-left",
+          payload: { matchId: "old-match" },
+        }),
+      );
+    });
+
+    expect(onEnvelope).not.toHaveBeenCalled();
   });
 });
