@@ -105,5 +105,6 @@ stateDiagram-v2
 - 現在の接続方式はシグナリングサーバなしの WebRTC 手動 SDP 交換で、`host-offer` と `guest-answer` の両方が必要。
 - 応答コードを完全になくすには、別のシグナリング経路を導入する必要がある。
 - ホスト画面は raw な `connectionState` だけでなく、「まだ answer code を待っているか」を状態として持つ。これにより peer が先に `connecting` を報告しても入力欄を維持する。
+- ICE gathering は STUN やブラウザ状態によって完了イベントが返らない場合があるため、一定時間で待機を打ち切り、取得済みの `localDescription` でコード生成を継続する。
 - `peer-left` を受信した後は WebRTC の raw state が一時的に `connected` のままでも、オンライン対局の操作は peer 不在として扱い無効化する。
 - WebRTC オブジェクトの `close` / `connectionstatechange` は、新しい部屋作成後に古い接続から遅れて届くことがある。状態へ反映するのは現在保持している peer/channel のイベントだけにする。

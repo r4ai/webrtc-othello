@@ -23,18 +23,31 @@ const rtcConfig: RTCConfiguration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
+const iceGatheringTimeoutMs = 5_000;
+
 function waitForIceGatheringComplete(connection: RTCPeerConnection): Promise<void> {
   if (connection.iceGatheringState === "complete") {
     return Promise.resolve();
   }
 
   return new Promise((resolve) => {
+    let settled = false;
+    const resolveOnce = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      clearTimeout(timeout);
+      connection.removeEventListener("icegatheringstatechange", handleStateChange);
+      resolve();
+    };
     const handleStateChange = () => {
       if (connection.iceGatheringState === "complete") {
-        connection.removeEventListener("icegatheringstatechange", handleStateChange);
-        resolve();
+        resolveOnce();
       }
     };
+    const timeout = setTimeout(resolveOnce, iceGatheringTimeoutMs);
 
     connection.addEventListener("icegatheringstatechange", handleStateChange);
   });
