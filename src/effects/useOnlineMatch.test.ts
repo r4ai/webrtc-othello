@@ -562,6 +562,15 @@ describe("useOnlineMatch", () => {
     });
 
     expect(result.current.viewModel.errorMessage).toBe("相手が切断しました。");
+    expect(result.current.viewModel.canInteract).toBe(false);
+    expect(result.current.viewModel.canRequestRematch).toBe(false);
+
+    sendEnvelope.mockClear();
+    act(() => {
+      result.current.actions.submitMove({ row: 2, col: 3 });
+    });
+
+    expect(sendEnvelope).not.toHaveBeenCalled();
 
     act(() => {
       capturedConnectionLostHandler?.();
