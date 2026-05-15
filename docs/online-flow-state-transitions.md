@@ -106,3 +106,4 @@ stateDiagram-v2
 - 応答コードを完全になくすには、別のシグナリング経路を導入する必要がある。
 - ホスト画面は raw な `connectionState` だけでなく、「まだ answer code を待っているか」を状態として持つ。これにより peer が先に `connecting` を報告しても入力欄を維持する。
 - `peer-left` を受信した後は WebRTC の raw state が一時的に `connected` のままでも、オンライン対局の操作は peer 不在として扱い無効化する。
+- WebRTC オブジェクトの `close` / `connectionstatechange` は、新しい部屋作成後に古い接続から遅れて届くことがある。状態へ反映するのは現在保持している peer/channel のイベントだけにする。
