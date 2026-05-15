@@ -28,18 +28,31 @@ const rtcConfig: RTCConfiguration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
+const iceGatheringTimeoutMs = 5_000;
+
 function waitForIceGatheringComplete(connection: RTCPeerConnection): Promise<void> {
   if (connection.iceGatheringState === "complete") {
     return Promise.resolve();
   }
 
   return new Promise((resolve) => {
+    let settled = false;
+    const resolveOnce = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      clearTimeout(timeout);
+      connection.removeEventListener("icegatheringstatechange", handleStateChange);
+      resolve();
+    };
     const handleStateChange = () => {
       if (connection.iceGatheringState === "complete") {
-        connection.removeEventListener("icegatheringstatechange", handleStateChange);
-        resolve();
+        resolveOnce();
       }
     };
+    const timeout = setTimeout(resolveOnce, iceGatheringTimeoutMs);
 
     connection.addEventListener("icegatheringstatechange", handleStateChange);
   });
@@ -88,11 +101,15 @@ export function usePeerConnection({
   }, [onConnectionLost]);
 
   const cleanupConnection = useCallback(() => {
-    channelRef.current?.close();
+    const channel = channelRef.current;
+    const peer = peerRef.current;
+
     channelRef.current = null;
-    peerRef.current?.close();
     peerRef.current = null;
     roleRef.current = null;
+
+    channel?.close();
+    peer?.close();
   }, []);
 
   const leaveConnection = useCallback(() => {
@@ -107,16 +124,28 @@ export function usePeerConnection({
     channelRef.current = channel;
 
     channel.addEventListener("open", () => {
+      if (channelRef.current !== channel) {
+        return;
+      }
+
       setErrorMessage(null);
       setConnectionState("connected");
     });
 
     channel.addEventListener("close", () => {
+      if (channelRef.current !== channel) {
+        return;
+      }
+
       setConnectionState("disconnected");
       onConnectionLostRef.current?.();
     });
 
     channel.addEventListener("message", (event) => {
+      if (channelRef.current !== channel) {
+        return;
+      }
+
       try {
         const envelope = decodePeerEnvelope(event.data);
         onEnvelopeRef.current(envelope);
@@ -134,6 +163,10 @@ export function usePeerConnection({
       setErrorMessage(null);
 
       connection.addEventListener("connectionstatechange", () => {
+        if (peerRef.current !== connection) {
+          return;
+        }
+
         const nextState = normalizeConnectionState(connection.connectionState);
         if (nextState === null) {
           return;

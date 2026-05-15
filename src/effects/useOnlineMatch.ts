@@ -51,6 +51,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
   const [isAwaitingAnswerCode, setIsAwaitingAnswerCode] = useState(false);
   const [localRematchRequested, setLocalRematchRequested] = useState(false);
   const [peerRequestedRematch, setPeerRequestedRematch] = useState(false);
+  const [peerUnavailable, setPeerUnavailable] = useState(false);
   const matchIdRef = useRef<string | null>(null);
   const revisionRef = useRef(0);
   const gameStateRef = useRef(gameState);
@@ -237,6 +238,9 @@ export function useOnlineMatch(): UseOnlineMatchResult {
         }
         case "peer-left": {
           clearPendingActions();
+          setPeerUnavailable(true);
+          setLocalRematchRequested(false);
+          setPeerRequestedRematch(false);
           setErrorMessage("相手が切断しました。");
           return;
         }
@@ -248,6 +252,9 @@ export function useOnlineMatch(): UseOnlineMatchResult {
     },
     onConnectionLost: () => {
       clearPendingActions();
+      setPeerUnavailable(true);
+      setLocalRematchRequested(false);
+      setPeerRequestedRematch(false);
       setErrorMessage("接続が切れました。");
     },
   });
@@ -261,6 +268,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
     setIsAwaitingAnswerCode(false);
     setLocalRematchRequested(false);
     setPeerRequestedRematch(false);
+    setPeerUnavailable(false);
     setErrorMessage(null);
   }, [clearPendingActions]);
 
@@ -391,6 +399,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
       const localPlayer = playerForRole(localRole);
       if (
         connectionState !== "connected" ||
+        peerUnavailable ||
         localPlayer === null ||
         gameStateRef.current.currentPlayer !== localPlayer
       ) {
@@ -412,7 +421,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
         payload: move,
       });
     },
-    [applyHostMove, connectionState, localRole, sendEnvelope],
+    [applyHostMove, connectionState, localRole, peerUnavailable, sendEnvelope],
   );
 
   const submitPass = useCallback(() => {
@@ -420,6 +429,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
     const localPlayer = playerForRole(localRole);
     if (
       connectionState !== "connected" ||
+      peerUnavailable ||
       localPlayer === null ||
       state.currentPlayer !== localPlayer ||
       state.validMoves.length > 0
@@ -437,10 +447,14 @@ export function useOnlineMatch(): UseOnlineMatchResult {
       revision: revisionRef.current,
       payload: { matchId: matchIdRef.current ?? "" },
     });
-  }, [applyHostMove, connectionState, localRole, sendEnvelope]);
+  }, [applyHostMove, connectionState, localRole, peerUnavailable, sendEnvelope]);
 
   const requestRematch = useCallback(() => {
-    if (connectionState !== "connected" || gameStateRef.current.status !== "finished") {
+    if (
+      connectionState !== "connected" ||
+      peerUnavailable ||
+      gameStateRef.current.status !== "finished"
+    ) {
       return;
     }
 
@@ -471,7 +485,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
       payload: { matchId: matchIdRef.current ?? "" },
     });
     setLocalRematchRequested(true);
-  }, [connectionState, localRole, peerRequestedRematch, sendEnvelope, syncState]);
+  }, [connectionState, localRole, peerRequestedRematch, peerUnavailable, sendEnvelope, syncState]);
 
   const leaveMatch = useCallback(() => {
     if (connectionState === "connected") {
@@ -500,6 +514,7 @@ export function useOnlineMatch(): UseOnlineMatchResult {
   const localPlayer = playerForRole(localRole);
   const canInteract =
     connectionState === "connected" &&
+    !peerUnavailable &&
     localPlayer !== null &&
     gameState.status === "playing" &&
     gameState.currentPlayer === localPlayer;
@@ -516,7 +531,8 @@ export function useOnlineMatch(): UseOnlineMatchResult {
       isJoiningRoom,
       isSubmittingAnswer,
       canInteract,
-      canRequestRematch: connectionState === "connected" && gameState.status === "finished",
+      canRequestRematch:
+        connectionState === "connected" && !peerUnavailable && gameState.status === "finished",
       localPlayerLabel: localRole === "host" ? "黒" : localRole === "guest" ? "白" : "未参加",
       matchId,
       revision,
